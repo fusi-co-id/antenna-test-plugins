@@ -1,0 +1,12 @@
+{
+    "name": "Dummy Signal Generator",
+    "vendor": "FUSI Development",
+    "series": "Dummy SG-2000",
+    "type": "LAN",
+    "author": "Yan Syafri Hidayat",
+    "email": "yansyaf@gmail.com",
+    "version": "1.0.0",
+    "description": "A dummy signal generator plugin for testing purposes.",
+    "url": "https://www.fusi.co.id",
+    "license": "MIT"
+}

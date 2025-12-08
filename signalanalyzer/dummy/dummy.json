@@ -1,0 +1,12 @@
+{
+    "name": "Dummy Signal Analyzer",
+    "vendor": "FUSI Development",
+    "series": "Dummy SA-1000",
+    "type": "LAN",
+    "author": "Yan Syafri Hidayat",
+    "email": "yansyaf@gmail.com",
+    "version": "1.0.0",
+    "description": "A dummy signal analyzer plugin for testing purposes.",
+    "url": "https://www.fusi.co.id",
+    "license": "MIT"
+}

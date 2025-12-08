@@ -1,0 +1,4 @@
+/signalanalyzer/*/build/
+/signalgenerator/*/build/
+/positioner/*/build/
+/dist/*.zip
