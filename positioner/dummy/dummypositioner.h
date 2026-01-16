@@ -25,23 +25,21 @@
 #define DUMMYPOSITIONER_H
 
 #include "iplugininterface.h"
-#include <QObject>
-#include <QString>
-#include <QTimer>
-#include <QRandomGenerator>
+#include <string>
+#include <thread>
+#include <atomic>
+#include <chrono>
 
 class DummyPositioner : public IPositionerPlugin
 {
-    Q_OBJECT
-    Q_INTERFACES(IPositionerPlugin)
     
 public:
     DummyPositioner();
     virtual ~DummyPositioner();
     
     // Device discovery
-    QVector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const QString &address) override;
+    std::vector<DeviceInfo> scanDevices() override;
+    bool connectToDevice(const std::string &address) override;
     
     // Connection management
     bool connect() override;
@@ -60,33 +58,24 @@ public:
     void start() override;
     void stop() override;
     
-signals:
-    void connected();
-    void disconnected();
-    void movementStarted();
-    void movementStopped();
-    void positionChanged(double az, double el, double pol);
-    void errorOccurred(const QString &error);
-    
-private slots:
-    void onTimerTick();
-    
 private:
+    void movementThread();
+    
     bool m_isConnected;
-    bool m_isMoving;
+    std::atomic<bool> m_isMoving;
     Step m_step;
     MinRange m_minRange;
     MaxRange m_maxRange;
     Movement m_currentMovement;
     double m_distance;
-    QString m_connectedAddress;
+    std::string m_connectedAddress;
     
     // Current position
     double m_currentAZ;
     double m_currentEL;
     double m_currentPOL;
     
-    QTimer *m_timer;
+    std::thread m_movementThread;
     int m_stepCount;
 };
 

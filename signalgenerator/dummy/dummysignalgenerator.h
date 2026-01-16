@@ -25,21 +25,18 @@
 #define DUMMYSIGNALGENERATOR_H
 
 #include "iplugininterface.h"
-#include <QObject>
-#include <QString>
+#include <string>
 
 class DummySignalGenerator : public ISignalGeneratorPlugin
 {
-    Q_OBJECT
-    Q_INTERFACES(ISignalGeneratorPlugin)
     
 public:
     DummySignalGenerator();
     virtual ~DummySignalGenerator();
     
     // Device discovery
-    QVector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const QString &address) override;
+    std::vector<DeviceInfo> scanDevices() override;
+    bool connectToDevice(const std::string &address) override;
     
     // Connection management
     bool connect() override;
@@ -55,19 +52,12 @@ public:
     void disableRf() override;
     bool isRfEnabled() const override;
     
-signals:
-    void connected();
-    void disconnected();
-    void rfEnabled();
-    void rfDisabled();
-    void errorOccurred(const QString &error);
-    
 private:
     bool m_isConnected;
     bool m_rfEnabled;
     double m_freqHz;
     double m_powerDbm;
-    QString m_connectedAddress;
+    std::string m_connectedAddress;
 };
 
 #endif // DUMMYSIGNALGENERATOR_H

@@ -24,16 +24,16 @@
 #ifndef IPLUGININTERFACE_H
 #define IPLUGININTERFACE_H
 
-#include <QString>
-#include <QObject>
-#include <QVector>
+#include <string>
+#include <vector>
+#include <functional>
 
 // Device information structure
 struct DeviceInfo {
-    QString name;           // Device name/model
-    QString serialNumber;   // Serial number or unique identifier
-    QString address;        // IP address, COM port, USB path, etc.
-    QString type;           // Connection type (LAN, USB, GPIB, Serial, etc.)
+    std::string name;           // Device name/model
+    std::string serialNumber;   // Serial number or unique identifier
+    std::string address;        // IP address, COM port, USB path, etc.
+    std::string type;           // Connection type (LAN, USB, GPIB, Serial, etc.)
     bool isAvailable;       // Whether device is available for connection
     
     DeviceInfo() : isAvailable(true) {}
@@ -83,15 +83,14 @@ struct Movement {
 };
 
 // Plugin interface for Signal Analyzer
-class ISignalAnalyzerPlugin : public QObject
+class ISignalAnalyzerPlugin
 {
-    Q_OBJECT
 public:
     virtual ~ISignalAnalyzerPlugin() = default;
     
     // Device discovery
-    virtual QVector<DeviceInfo> scanDevices() = 0;
-    virtual bool connectToDevice(const QString &address) = 0;
+    virtual std::vector<DeviceInfo> scanDevices() = 0;
+    virtual bool connectToDevice(const std::string &address) = 0;
     
     // Connection management
     virtual bool connect() = 0;
@@ -106,24 +105,23 @@ public:
     // Measurement
     virtual Peak findPeak() = 0;
     
-signals:
-    void connected();
-    void disconnected();
-    void peakFound(const Peak &peak);
-    void errorOccurred(const QString &error);
-    void devicesScanned(const QVector<DeviceInfo> &devices);
+    // Callback functions for events (optional, can be nullptr)
+    std::function<void()> onConnected;
+    std::function<void()> onDisconnected;
+    std::function<void(const Peak&)> onPeakFound;
+    std::function<void(const std::string&)> onError;
+    std::function<void(const std::vector<DeviceInfo>&)> onDevicesScanned;
 };
 
 // Plugin interface for Signal Generator
-class ISignalGeneratorPlugin : public QObject
+class ISignalGeneratorPlugin
 {
-    Q_OBJECT
 public:
     virtual ~ISignalGeneratorPlugin() = default;
     
     // Device discovery
-    virtual QVector<DeviceInfo> scanDevices() = 0;
-    virtual bool connectToDevice(const QString &address) = 0;
+    virtual std::vector<DeviceInfo> scanDevices() = 0;
+    virtual bool connectToDevice(const std::string &address) = 0;
     
     // Connection management
     virtual bool connect() = 0;
@@ -139,25 +137,24 @@ public:
     virtual void disableRf() = 0;
     virtual bool isRfEnabled() const = 0;
     
-signals:
-    void connected();
-    void disconnected();
-    void rfEnabled();
-    void rfDisabled();
-    void errorOccurred(const QString &error);
-    void devicesScanned(const QVector<DeviceInfo> &devices);
+    // Callback functions for events (optional, can be nullptr)
+    std::function<void()> onConnected;
+    std::function<void()> onDisconnected;
+    std::function<void()> onRfEnabled;
+    std::function<void()> onRfDisabled;
+    std::function<void(const std::string&)> onError;
+    std::function<void(const std::vector<DeviceInfo>&)> onDevicesScanned;
 };
 
 // Plugin interface for Positioner
-class IPositionerPlugin : public QObject
+class IPositionerPlugin
 {
-    Q_OBJECT
 public:
     virtual ~IPositionerPlugin() = default;
     
     // Device discovery
-    virtual QVector<DeviceInfo> scanDevices() = 0;
-    virtual bool connectToDevice(const QString &address) = 0;
+    virtual std::vector<DeviceInfo> scanDevices() = 0;
+    virtual bool connectToDevice(const std::string &address) = 0;
     
     // Connection management
     virtual bool connect() = 0;
@@ -176,28 +173,24 @@ public:
     virtual void start() = 0;
     virtual void stop() = 0;
     
-signals:
-    void connected();
-    void disconnected();
-    void movementStarted();
-    void movementStopped();
-    void positionChanged(double az, double el, double pol);
-    void errorOccurred(const QString &error);
-    void devicesScanned(const QVector<DeviceInfo> &devices);
+    // Callback functions for events (optional, can be nullptr)
+    std::function<void()> onConnected;
+    std::function<void()> onDisconnected;
+    std::function<void()> onMovementStarted;
+    std::function<void()> onMovementStopped;
+    std::function<void(double, double, double)> onPositionChanged;
+    std::function<void(const std::string&)> onError;
+    std::function<void(const std::vector<DeviceInfo>&)> onDevicesScanned;
 };
 
 // Factory function type definitions
 typedef ISignalAnalyzerPlugin* (*CreateSignalAnalyzerPluginFunc)();
 typedef ISignalGeneratorPlugin* (*CreateSignalGeneratorPluginFunc)();
 typedef IPositionerPlugin* (*CreatePositionerPluginFunc)();
-typedef void (*DestroyPluginFunc)(QObject*);
+typedef void (*DestroyPluginFunc)(void*);
 
 #define SIGNAL_ANALYZER_PLUGIN_IID "id.co.fusi.antenna.ISignalAnalyzerPlugin/1.0"
 #define SIGNAL_GENERATOR_PLUGIN_IID "id.co.fusi.antenna.ISignalGeneratorPlugin/1.0"
 #define POSITIONER_PLUGIN_IID "id.co.fusi.antenna.IPositionerPlugin/1.0"
-
-Q_DECLARE_INTERFACE(ISignalAnalyzerPlugin, SIGNAL_ANALYZER_PLUGIN_IID)
-Q_DECLARE_INTERFACE(ISignalGeneratorPlugin, SIGNAL_GENERATOR_PLUGIN_IID)
-Q_DECLARE_INTERFACE(IPositionerPlugin, POSITIONER_PLUGIN_IID)
 
 #endif // IPLUGININTERFACE_H

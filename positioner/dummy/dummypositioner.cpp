@@ -22,8 +22,9 @@
 ****************************************************************************/
 
 #include "dummypositioner.h"
-#include <QDebug>
-#include <QThread>
+#include <iostream>
+#include <thread>
+#include <chrono>
 #include <cmath>
 
 DummyPositioner::DummyPositioner()
@@ -68,21 +69,17 @@ DummyPositioner::DummyPositioner()
     m_currentMovement.Y = 0.0;
     m_currentMovement.V = 0.0;
     
-    // Create timer for simulating movement
-    m_timer = new QTimer(this);
-    QObject::connect(m_timer, &QTimer::timeout, this, &DummyPositioner::onTimerTick);
-    
-    qDebug() << "[Dummy Positioner Plugin] Instance created";
+    std::cout << "[Dummy Positioner Plugin] Instance created" << std::endl;
 }
 
-QVector<DeviceInfo> DummyPositioner::scanDevices()
+std::vector<DeviceInfo> DummyPositioner::scanDevices()
 {
-    qDebug() << "[Dummy Positioner Plugin] Scanning for devices...";
+    std::cout << "[Dummy Positioner Plugin] Scanning for devices..." << std::endl;
     
-    QVector<DeviceInfo> devices;
+    std::vector<DeviceInfo> devices;
     
     // Simulate finding devices
-    QThread::msleep(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     
     // Simulate 1 LAN device
     DeviceInfo device1;
@@ -91,7 +88,7 @@ QVector<DeviceInfo> DummyPositioner::scanDevices()
     device1.address = "192.168.1.120";
     device1.type = "LAN";
     device1.isAvailable = true;
-    devices.append(device1);
+    devices.push_back(device1);
     
     // Simulate 1 Serial device
     DeviceInfo device2;
@@ -100,31 +97,35 @@ QVector<DeviceInfo> DummyPositioner::scanDevices()
     device2.address = "COM3";
     device2.type = "Serial";
     device2.isAvailable = true;
-    devices.append(device2);
+    devices.push_back(device2);
     
-    qDebug() << "[Dummy Positioner Plugin] Found" << devices.size() << "devices";
+    std::cout << "[Dummy Positioner Plugin] Found " << devices.size() << " devices" << std::endl;
     
-    emit devicesScanned(devices);
+    if (onDevicesScanned) {
+        onDevicesScanned(devices);
+    }
     return devices;
 }
 
-bool DummyPositioner::connectToDevice(const QString &address)
+bool DummyPositioner::connectToDevice(const std::string &address)
 {
     if (m_isConnected) {
-        qWarning() << "[Dummy Positioner Plugin] Already connected to" << m_connectedAddress;
+        std::cerr << "[Dummy Positioner Plugin] Already connected to " << m_connectedAddress << std::endl;
         return false;
     }
     
-    qDebug() << "[Dummy Positioner Plugin] Connecting to device at:" << address;
+    std::cout << "[Dummy Positioner Plugin] Connecting to device at: " << address << std::endl;
     
     // Simulate connection delay
-    QThread::msleep(150);
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
     
     m_connectedAddress = address;
     m_isConnected = true;
     
-    qDebug() << "[Dummy Positioner Plugin] Connected successfully to" << address;
-    emit connected();
+    std::cout << "[Dummy Positioner Plugin] Connected successfully to " << address << std::endl;
+    if (onConnected) {
+        onConnected();
+    }
     return true;
 }
 
@@ -133,37 +134,39 @@ DummyPositioner::~DummyPositioner()
     if (m_isConnected) {
         disconnect();
     }
-    qDebug() << "[Dummy Positioner Plugin] Instance destroyed";
+    std::cout << "[Dummy Positioner Plugin] Instance destroyed" << std::endl;
 }
 
 bool DummyPositioner::connect()
 {
     if (m_isConnected) {
-        qWarning() << "[Dummy Positioner Plugin] Already connected";
+        std::cerr << "[Dummy Positioner Plugin] Already connected" << std::endl;
         return true;
     }
     
-    qDebug() << "[Dummy Positioner Plugin] Connecting to simulated positioner...";
+    std::cout << "[Dummy Positioner Plugin] Connecting to simulated positioner..." << std::endl;
     
     // Simulate connection delay
-    QThread::msleep(100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
     m_isConnected = true;
     
-    qDebug() << "[Dummy Positioner Plugin] Connected successfully";
-    qDebug() << "  Device: Dummy Positioner v2.0";
-    qDebug() << "  AZ Range:" << m_minRange.AZ << "to" << m_maxRange.AZ << "degrees";
-    qDebug() << "  EL Range:" << m_minRange.EL << "to" << m_maxRange.EL << "degrees";
-    qDebug() << "  POL Range:" << m_minRange.POL << "to" << m_maxRange.POL << "degrees";
+    std::cout << "[Dummy Positioner Plugin] Connected successfully" << std::endl;
+    std::cout << "  Device: Dummy Positioner v2.0" << std::endl;
+    std::cout << "  AZ Range: " << m_minRange.AZ << " to " << m_maxRange.AZ << " degrees" << std::endl;
+    std::cout << "  EL Range: " << m_minRange.EL << " to " << m_maxRange.EL << " degrees" << std::endl;
+    std::cout << "  POL Range: " << m_minRange.POL << " to " << m_maxRange.POL << " degrees" << std::endl;
     
-    emit connected();
+    if (onConnected) {
+        onConnected();
+    }
     return true;
 }
 
 void DummyPositioner::disconnect()
 {
     if (!m_isConnected) {
-        qWarning() << "[Dummy Positioner Plugin] Not connected";
+        std::cerr << "[Dummy Positioner Plugin] Not connected" << std::endl;
         return;
     }
     
@@ -171,13 +174,15 @@ void DummyPositioner::disconnect()
         stop();
     }
     
-    qDebug() << "[Dummy Positioner Plugin] Disconnecting from" << m_connectedAddress;
+    std::cout << "[Dummy Positioner Plugin] Disconnecting from " << m_connectedAddress << std::endl;
     
     m_isConnected = false;
     m_connectedAddress.clear();
     
-    qDebug() << "[Dummy Positioner Plugin] Disconnected";
-    emit disconnected();
+    std::cout << "[Dummy Positioner Plugin] Disconnected" << std::endl;
+    if (onDisconnected) {
+        onDisconnected();
+    }
 }
 
 bool DummyPositioner::isConnected() const
@@ -188,136 +193,165 @@ bool DummyPositioner::isConnected() const
 void DummyPositioner::setAZStep(double step)
 {
     m_step.AZ = step;
-    qDebug() << "[Dummy Positioner Plugin] AZ Step set to" << step << "degrees";
+    std::cout << "[Dummy Positioner Plugin] AZ Step set to " << step << " degrees" << std::endl;
 }
 
 void DummyPositioner::setStep(const Step &step)
 {
     m_step = step;
-    qDebug() << "[Dummy Positioner Plugin] Step set:";
-    qDebug() << "  AZ:" << step.AZ << "EL:" << step.EL << "POL:" << step.POL;
-    qDebug() << "  X:" << step.X << "Y:" << step.Y << "V:" << step.V;
+    std::cout << "[Dummy Positioner Plugin] Step set:" << std::endl;
+    std::cout << "  AZ: " << step.AZ << " EL: " << step.EL << " POL: " << step.POL << std::endl;
+    std::cout << "  X: " << step.X << " Y: " << step.Y << " V: " << step.V << std::endl;
 }
 
 void DummyPositioner::setMinRange(const MinRange &minRange)
 {
     m_minRange = minRange;
-    qDebug() << "[Dummy Positioner Plugin] Min Range set:";
-    qDebug() << "  AZ:" << minRange.AZ << "EL:" << minRange.EL << "POL:" << minRange.POL;
+    std::cout << "[Dummy Positioner Plugin] Min Range set:" << std::endl;
+    std::cout << "  AZ: " << minRange.AZ << " EL: " << minRange.EL << " POL: " << minRange.POL << std::endl;
 }
 
 void DummyPositioner::setMaxRange(const MaxRange &maxRange)
 {
     m_maxRange = maxRange;
-    qDebug() << "[Dummy Positioner Plugin] Max Range set:";
-    qDebug() << "  AZ:" << maxRange.AZ << "EL:" << maxRange.EL << "POL:" << maxRange.POL;
+    std::cout << "[Dummy Positioner Plugin] Max Range set:" << std::endl;
+    std::cout << "  AZ: " << maxRange.AZ << " EL: " << maxRange.EL << " POL: " << maxRange.POL << std::endl;
 }
 
 void DummyPositioner::setMovement(const Movement &movement)
 {
     m_currentMovement = movement;
-    qDebug() << "[Dummy Positioner Plugin] Movement set:";
-    qDebug() << "  AZ:" << movement.AZ << "EL:" << movement.EL << "POL:" << movement.POL;
-    qDebug() << "  X:" << movement.X << "Y:" << movement.Y << "V:" << movement.V;
+    std::cout << "[Dummy Positioner Plugin] Movement set:" << std::endl;
+    std::cout << "  AZ: " << movement.AZ << " EL: " << movement.EL << " POL: " << movement.POL << std::endl;
+    std::cout << "  X: " << movement.X << " Y: " << movement.Y << " V: " << movement.V << std::endl;
 }
 
 void DummyPositioner::setDistance(double distance)
 {
     m_distance = distance;
-    qDebug() << "[Dummy Positioner Plugin] Distance set to" << distance;
+    std::cout << "[Dummy Positioner Plugin] Distance set to " << distance << std::endl;
 }
 
 void DummyPositioner::start()
 {
     if (!m_isConnected) {
-        qWarning() << "[Dummy Positioner Plugin] Cannot start - not connected";
-        emit errorOccurred("Positioner not connected");
+        std::cerr << "[Dummy Positioner Plugin] Cannot start - not connected" << std::endl;
+        if (onError) {
+            onError("Positioner not connected");
+        }
         return;
     }
     
     if (m_isMoving) {
-        qWarning() << "[Dummy Positioner Plugin] Already moving";
+        std::cerr << "[Dummy Positioner Plugin] Already moving" << std::endl;
         return;
     }
     
-    qDebug() << "[Dummy Positioner Plugin] Starting movement...";
-    qDebug() << "  From position: AZ=" << m_currentAZ << "EL=" << m_currentEL << "POL=" << m_currentPOL;
+    std::cout << "[Dummy Positioner Plugin] Starting movement..." << std::endl;
+    std::cout << "  From position: AZ=" << m_currentAZ << " EL=" << m_currentEL << " POL=" << m_currentPOL << std::endl;
     
     m_isMoving = true;
     m_stepCount = 0;
     
-    // Start timer to simulate movement (update every 100ms)
-    m_timer->start(100);
+    // Start movement thread
+    m_movementThread = std::thread(&DummyPositioner::movementThread, this);
     
-    emit movementStarted();
+    if (onMovementStarted) {
+        onMovementStarted();
+    }
 }
 
 void DummyPositioner::stop()
 {
     if (!m_isMoving) {
-        qWarning() << "[Dummy Positioner Plugin] Not moving";
+        std::cerr << "[Dummy Positioner Plugin] Not moving" << std::endl;
         return;
     }
     
-    qDebug() << "[Dummy Positioner Plugin] Stopping movement...";
+    std::cout << "[Dummy Positioner Plugin] Stopping movement..." << std::endl;
     
-    m_timer->stop();
     m_isMoving = false;
     
-    qDebug() << "  Final position: AZ=" << m_currentAZ << "EL=" << m_currentEL << "POL=" << m_currentPOL;
-    qDebug() << "  Steps taken:" << m_stepCount;
+    // Wait for movement thread to finish
+    if (m_movementThread.joinable()) {
+        m_movementThread.join();
+    }
     
-    emit movementStopped();
+    std::cout << "  Final position: AZ=" << m_currentAZ << " EL=" << m_currentEL << " POL=" << m_currentPOL << std::endl;
+    std::cout << "  Steps taken: " << m_stepCount << std::endl;
+    
+    if (onMovementStopped) {
+        onMovementStopped();
+    }
 }
 
-void DummyPositioner::onTimerTick()
+void DummyPositioner::movementThread()
 {
-    if (!m_isMoving) {
-        return;
-    }
-    
-    // Update position based on movement and step
-    double nextAZ = m_currentAZ + (m_currentMovement.AZ * m_step.AZ);
-    double nextEL = m_currentEL + (m_currentMovement.EL * m_step.EL);
-    double nextPOL = m_currentPOL + (m_currentMovement.POL * m_step.POL);
-    
-    // Check bounds
-    if (nextAZ < m_minRange.AZ || nextAZ > m_maxRange.AZ) {
-        qDebug() << "[Dummy Positioner Plugin] AZ limit reached:" << nextAZ;
-        stop();
-        return;
-    }
-    
-    if (nextEL < m_minRange.EL || nextEL > m_maxRange.EL) {
-        qDebug() << "[Dummy Positioner Plugin] EL limit reached:" << nextEL;
-        stop();
-        return;
-    }
-    
-    if (nextPOL < m_minRange.POL || nextPOL > m_maxRange.POL) {
-        qDebug() << "[Dummy Positioner Plugin] POL limit reached:" << nextPOL;
-        stop();
-        return;
-    }
-    
-    // Update position
-    m_currentAZ = nextAZ;
-    m_currentEL = nextEL;
-    m_currentPOL = nextPOL;
-    m_stepCount++;
-    
-    // Emit position changed
-    emit positionChanged(m_currentAZ, m_currentEL, m_currentPOL);
-    
-    // Check if we've moved the specified distance (for demo, stop after 50 steps)
-    if (m_stepCount >= 50) {
-        qDebug() << "[Dummy Positioner Plugin] Movement completed (50 steps)";
-        stop();
+    while (m_isMoving) {
+        // Update position based on movement and step
+        double nextAZ = m_currentAZ + (m_currentMovement.AZ * m_step.AZ);
+        double nextEL = m_currentEL + (m_currentMovement.EL * m_step.EL);
+        double nextPOL = m_currentPOL + (m_currentMovement.POL * m_step.POL);
+        
+        // Check bounds
+        if (nextAZ < m_minRange.AZ || nextAZ > m_maxRange.AZ) {
+            std::cout << "[Dummy Positioner Plugin] AZ limit reached: " << nextAZ << std::endl;
+            m_isMoving = false;
+            break;
+        }
+        
+        if (nextEL < m_minRange.EL || nextEL > m_maxRange.EL) {
+            std::cout << "[Dummy Positioner Plugin] EL limit reached: " << nextEL << std::endl;
+            m_isMoving = false;
+            break;
+        }
+        
+        if (nextPOL < m_minRange.POL || nextPOL > m_maxRange.POL) {
+            std::cout << "[Dummy Positioner Plugin] POL limit reached: " << nextPOL << std::endl;
+            m_isMoving = false;
+            break;
+        }
+        
+        // Update position
+        m_currentAZ = nextAZ;
+        m_currentEL = nextEL;
+        m_currentPOL = nextPOL;
+        m_stepCount++;
+        
+        // Emit position changed callback
+        if (onPositionChanged) {
+            onPositionChanged(m_currentAZ, m_currentEL, m_currentPOL);
+        }
+        
+        // Check if we've moved the specified distance (for demo, stop after 50 steps)
+        if (m_stepCount >= 50) {
+            std::cout << "[Dummy Positioner Plugin] Movement completed (50 steps)" << std::endl;
+            m_isMoving = false;
+            break;
+        }
+        
+        // Sleep for 100ms between steps
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
 // Factory function to create plugin instance
-extern "C" Q_DECL_EXPORT IPositionerPlugin* createPositionerPlugin()
-{
-    return new DummyPositioner();
+extern "C" {
+    #ifdef _WIN32
+        __declspec(dllexport)
+    #endif
+    IPositionerPlugin* createPositionerPlugin()
+    {
+        std::cout << "[Dummy Positioner Plugin] Factory: Creating plugin instance" << std::endl;
+        return new DummyPositioner();
+    }
+    
+    #ifdef _WIN32
+        __declspec(dllexport)
+    #endif
+    void destroyPlugin(void* plugin)
+    {
+        std::cout << "[Dummy Positioner Plugin] Factory: Destroying plugin instance" << std::endl;
+        delete static_cast<IPositionerPlugin*>(plugin);
+    }
 }

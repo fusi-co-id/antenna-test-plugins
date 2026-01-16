@@ -2,6 +2,8 @@
 
 This document provides instructions for developing, building, and installing plugins for the Antenna Tester GUI application.
 
+> **🎉 Now Qt-Free!** As of January 2026, plugins can be developed using standard C++17 without requiring Qt dependencies. This makes plugin development simpler, more flexible, and accessible to any C++ developer. See [MIGRATION_TO_QT_FREE.md](MIGRATION_TO_QT_FREE.md) for details.
+
 ## What is a Plugin?
 
 A plugin is a self-contained software component (typically a dynamic-link library or `.dll` on Windows, and a shared object or `.so` on Linux) that extends the functionality of the Antenna Tester GUI. The application uses plugins to communicate with various hardware instruments, such as:
@@ -10,7 +12,7 @@ A plugin is a self-contained software component (typically a dynamic-link librar
 - Signal Generators
 - Positioners
 
-This modular plugin architecture allows the application to support new hardware devices without needing to modify or recompile the core application itself. Each plugin must implement one of the C++ interfaces defined in `iplugininterface.h` and be paired with a JSON metadata file.
+This modular plugin architecture allows the application to support new hardware devices without needing to modify or recompile the core application itself. Each plugin must implement one of the C++ interfaces defined in [iplugininterface.h](iplugininterface.h) and be paired with a JSON metadata file.
 
 ## Prerequisites
 
@@ -21,18 +23,16 @@ Before building the plugins, ensure you have the following software installed:
    - Download from: https://cmake.org/download/
    - Add CMake to your system PATH during installation
 
-2. **Qt 6** (version 6.9.1 or compatible)
-   - Download from: https://www.qt.io/download
-   - Install the MSVC 2022 64-bit version for Windows
-   - On Linux, install via package manager: `sudo apt-get install qt6-base-dev`
+2. **C++ Compiler with C++17 Support**
+   - **Windows**: Visual Studio 2019 or newer, or MinGW-w64
+   - **Linux**: GCC 7+ or Clang 5+: `sudo apt-get install g++`
+   - **macOS**: Xcode Command Line Tools
 
-3. **C++ Compiler**
-   - **Windows**: Visual Studio 2022 with C++ development tools
-   - **Linux**: GCC/G++ (version 9 or higher): `sudo apt-get install g++`
-
-4. **Build Tools**
-   - **Windows**: Visual Studio Build Tools or Ninja
+3. **Build Tools**
+   - **Windows**: Visual Studio Build Tools, MSBuild, or Ninja
    - **Linux**: Make: `sudo apt-get install make`
+
+> **Note:** Qt is no longer required for plugin development! Plugins use only standard C++ libraries.
 
 ### Verification
 To verify your installation:
@@ -40,13 +40,10 @@ To verify your installation:
 # Check CMake version
 cmake --version
 
-# Check Qt installation (Windows)
-dir "C:\\Qt\\6.9.1\\msvc2022_64"
-
 # Check compiler (Windows)
 cl.exe
 
-# Check compiler (Linux)
+# Check compiler (Linux/macOS)
 g++ --version
 ```
 

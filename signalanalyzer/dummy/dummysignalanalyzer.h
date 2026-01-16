@@ -25,23 +25,19 @@
 #define DUMMYSIGNALANALYZER_H
 
 #include "iplugininterface.h"
-#include <QObject>
-#include <QString>
-#include <QTimer>
-#include <QRandomGenerator>
+#include <string>
+#include <random>
 
 class DummySignalAnalyzer : public ISignalAnalyzerPlugin
 {
-    Q_OBJECT
-    Q_INTERFACES(ISignalAnalyzerPlugin)
     
 public:
     DummySignalAnalyzer();
     virtual ~DummySignalAnalyzer();
     
     // Device discovery
-    QVector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const QString &address) override;
+    std::vector<DeviceInfo> scanDevices() override;
+    bool connectToDevice(const std::string &address) override;
     
     // Connection management
     bool connect() override;
@@ -56,18 +52,13 @@ public:
     // Measurement
     Peak findPeak() override;
     
-signals:
-    void connected();
-    void disconnected();
-    void peakFound(const Peak &peak);
-    void errorOccurred(const QString &error);
-    
 private:
     bool m_isConnected;
     double m_startFreqHz;
     double m_stopFreqHz;
     double m_rbwHz;
-    QString m_connectedAddress;
+    std::string m_connectedAddress;
+    std::mt19937 m_randomGenerator;
 };
 
 #endif // DUMMYSIGNALANALYZER_H

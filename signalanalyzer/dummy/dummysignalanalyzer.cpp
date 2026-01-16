@@ -22,9 +22,9 @@
 ****************************************************************************/
 
 #include "dummysignalanalyzer.h"
-#include <QDebug>
-#include <QThread>
-#include <QRandomGenerator>
+#include <iostream>
+#include <thread>
+#include <chrono>
 #include <cmath>
 
 DummySignalAnalyzer::DummySignalAnalyzer()
@@ -34,7 +34,9 @@ DummySignalAnalyzer::DummySignalAnalyzer()
     , m_rbwHz(1.0e6)           // 1 MHz default
     , m_connectedAddress("")
 {
-    qDebug() << "[Dummy SA Plugin] Instance created";
+    // Initialize random generator with current time
+    m_randomGenerator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+    std::cout << "[Dummy SA Plugin] Instance created" << std::endl;
 }
 
 DummySignalAnalyzer::~DummySignalAnalyzer()
@@ -42,17 +44,17 @@ DummySignalAnalyzer::~DummySignalAnalyzer()
     if (m_isConnected) {
         disconnect();
     }
-    qDebug() << "[Dummy SA Plugin] Instance destroyed";
+    std::cout << "[Dummy SA Plugin] Instance destroyed" << std::endl;
 }
 
-QVector<DeviceInfo> DummySignalAnalyzer::scanDevices()
+std::vector<DeviceInfo> DummySignalAnalyzer::scanDevices()
 {
-    qDebug() << "[Dummy SA Plugin] Scanning for devices...";
+    std::cout << "[Dummy SA Plugin] Scanning for devices..." << std::endl;
     
-    QVector<DeviceInfo> devices;
+    std::vector<DeviceInfo> devices;
     
     // Simulate finding devices
-    QThread::msleep(200);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     
     // Simulate 2-3 LAN devices
     DeviceInfo device1;
@@ -61,7 +63,7 @@ QVector<DeviceInfo> DummySignalAnalyzer::scanDevices()
     device1.address = "192.168.1.100";
     device1.type = "LAN";
     device1.isAvailable = true;
-    devices.append(device1);
+    devices.push_back(device1);
     
     DeviceInfo device2;
     device2.name = "Dummy SA-2000";
@@ -69,7 +71,7 @@ QVector<DeviceInfo> DummySignalAnalyzer::scanDevices()
     device2.address = "192.168.1.101";
     device2.type = "LAN";
     device2.isAvailable = true;
-    devices.append(device2);
+    devices.push_back(device2);
     
     // Simulate 1 USB device
     DeviceInfo device3;
@@ -78,72 +80,80 @@ QVector<DeviceInfo> DummySignalAnalyzer::scanDevices()
     device3.address = "USB0::0x1234::0x5678::DSA-USB-9012::INSTR";
     device3.type = "USB";
     device3.isAvailable = true;
-    devices.append(device3);
+    devices.push_back(device3);
     
-    qDebug() << "[Dummy SA Plugin] Found" << devices.size() << "devices";
+    std::cout << "[Dummy SA Plugin] Found " << devices.size() << " devices" << std::endl;
     
-    emit devicesScanned(devices);
+    if (onDevicesScanned) {
+        onDevicesScanned(devices);
+    }
     return devices;
 }
 
-bool DummySignalAnalyzer::connectToDevice(const QString &address)
+bool DummySignalAnalyzer::connectToDevice(const std::string &address)
 {
     if (m_isConnected) {
-        qWarning() << "[Dummy SA Plugin] Already connected to" << m_connectedAddress;
+        std::cerr << "[Dummy SA Plugin] Already connected to " << m_connectedAddress << std::endl;
         return false;
     }
     
-    qDebug() << "[Dummy SA Plugin] Connecting to device at:" << address;
+    std::cout << "[Dummy SA Plugin] Connecting to device at: " << address << std::endl;
     
     // Simulate connection delay
-    QThread::msleep(150);
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
     
     m_connectedAddress = address;
     m_isConnected = true;
     
-    qDebug() << "[Dummy SA Plugin] Connected successfully to" << address;
-    emit connected();
+    std::cout << "[Dummy SA Plugin] Connected successfully to " << address << std::endl;
+    if (onConnected) {
+        onConnected();
+    }
     return true;
 }
 
 bool DummySignalAnalyzer::connect()
 {
     if (m_isConnected) {
-        qWarning() << "[Dummy SA Plugin] Already connected";
+        std::cerr << "[Dummy SA Plugin] Already connected" << std::endl;
         return true;
     }
     
-    qDebug() << "[Dummy SA Plugin] Connecting to simulated instrument...";
+    std::cout << "[Dummy SA Plugin] Connecting to simulated instrument..." << std::endl;
     
     // Simulate connection delay
-    QThread::msleep(100);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
     m_isConnected = true;
     
-    qDebug() << "[Dummy SA Plugin] Connected successfully";
-    qDebug() << "  Device: Dummy Signal Analyzer v1.0";
-    qDebug() << "  Start Freq:" << m_startFreqHz / 1e6 << "MHz";
-    qDebug() << "  Stop Freq:" << m_stopFreqHz / 1e6 << "MHz";
-    qDebug() << "  RBW:" << m_rbwHz / 1e6 << "MHz";
+    std::cout << "[Dummy SA Plugin] Connected successfully" << std::endl;
+    std::cout << "  Device: Dummy Signal Analyzer v1.0" << std::endl;
+    std::cout << "  Start Freq: " << m_startFreqHz / 1e6 << " MHz" << std::endl;
+    std::cout << "  Stop Freq: " << m_stopFreqHz / 1e6 << " MHz" << std::endl;
+    std::cout << "  RBW: " << m_rbwHz / 1e6 << " MHz" << std::endl;
     
-    emit connected();
+    if (onConnected) {
+        onConnected();
+    }
     return true;
 }
 
 void DummySignalAnalyzer::disconnect()
 {
     if (!m_isConnected) {
-        qWarning() << "[Dummy SA Plugin] Not connected";
+        std::cerr << "[Dummy SA Plugin] Not connected" << std::endl;
         return;
     }
     
-    qDebug() << "[Dummy SA Plugin] Disconnecting from" << m_connectedAddress;
+    std::cout << "[Dummy SA Plugin] Disconnecting from " << m_connectedAddress << std::endl;
     
     m_isConnected = false;
     m_connectedAddress.clear();
     
-    qDebug() << "[Dummy SA Plugin] Disconnected";
-    emit disconnected();
+    std::cout << "[Dummy SA Plugin] Disconnected" << std::endl;
+    if (onDisconnected) {
+        onDisconnected();
+    }
 }
 
 bool DummySignalAnalyzer::isConnected() const
@@ -154,19 +164,19 @@ bool DummySignalAnalyzer::isConnected() const
 void DummySignalAnalyzer::setStartFreq(double freqHz)
 {
     m_startFreqHz = freqHz;
-    qDebug() << "[Dummy SA Plugin] Start Freq set to" << freqHz / 1e6 << "MHz";
+    std::cout << "[Dummy SA Plugin] Start Freq set to " << freqHz / 1e6 << " MHz" << std::endl;
 }
 
 void DummySignalAnalyzer::setStopFreq(double freqHz)
 {
     m_stopFreqHz = freqHz;
-    qDebug() << "[Dummy SA Plugin] Stop Freq set to" << freqHz / 1e6 << "MHz";
+    std::cout << "[Dummy SA Plugin] Stop Freq set to " << freqHz / 1e6 << " MHz" << std::endl;
 }
 
 void DummySignalAnalyzer::setRBW(double freqHz)
 {
     m_rbwHz = freqHz;
-    qDebug() << "[Dummy SA Plugin] RBW set to" << freqHz / 1e6 << "MHz";
+    std::cout << "[Dummy SA Plugin] RBW set to " << freqHz / 1e6 << " MHz" << std::endl;
 }
 
 Peak DummySignalAnalyzer::findPeak()
@@ -174,8 +184,10 @@ Peak DummySignalAnalyzer::findPeak()
     Peak peak;
     
     if (!m_isConnected) {
-        qWarning() << "[Dummy SA Plugin] Cannot find peak - not connected";
-        emit errorOccurred("Signal Analyzer not connected");
+        std::cerr << "[Dummy SA Plugin] Cannot find peak - not connected" << std::endl;
+        if (onError) {
+            onError("Signal Analyzer not connected");
+        }
         return peak;
     }
     
@@ -185,18 +197,21 @@ Peak DummySignalAnalyzer::findPeak()
     double centerFreq = m_startFreqHz + freqRange / 2.0;
     
     // Add some randomness around center (simulate slight variations)
-    double randomOffset = (QRandomGenerator::global()->generateDouble() - 0.5) * freqRange * 0.2;
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
+    double randomOffset = (dist(m_randomGenerator) - 0.5) * freqRange * 0.2;
     peak.frequencyHz = centerFreq + randomOffset;
     
     // Generate realistic power level with some noise
     // Base level around -50 dBm with ±10 dB variation
-    peak.leveldBm = -50.0 + (QRandomGenerator::global()->generateDouble() - 0.5) * 20.0;
+    peak.leveldBm = -50.0 + (dist(m_randomGenerator) - 0.5) * 20.0;
     
-    qDebug() << "[Dummy SA Plugin] Peak found at" 
-             << peak.frequencyHz / 1e6 << "MHz,"
-             << peak.leveldBm << "dBm";
+    std::cout << "[Dummy SA Plugin] Peak found at " 
+             << peak.frequencyHz / 1e6 << " MHz, "
+             << peak.leveldBm << " dBm" << std::endl;
     
-    emit peakFound(peak);
+    if (onPeakFound) {
+        onPeakFound(peak);
+    }
     return peak;
 }
 
@@ -207,16 +222,16 @@ extern "C" {
     #endif
     ISignalAnalyzerPlugin* createSignalAnalyzerPlugin()
     {
-        qDebug() << "[Dummy SA Plugin] Factory: Creating plugin instance";
+        std::cout << "[Dummy SA Plugin] Factory: Creating plugin instance" << std::endl;
         return new DummySignalAnalyzer();
     }
     
     #ifdef _WIN32
         __declspec(dllexport)
     #endif
-    void destroyPlugin(QObject* plugin)
+    void destroyPlugin(void* plugin)
     {
-        qDebug() << "[Dummy SA Plugin] Factory: Destroying plugin instance";
-        delete plugin;
+        std::cout << "[Dummy SA Plugin] Factory: Destroying plugin instance" << std::endl;
+        delete static_cast<ISignalAnalyzerPlugin*>(plugin);
     }
 }

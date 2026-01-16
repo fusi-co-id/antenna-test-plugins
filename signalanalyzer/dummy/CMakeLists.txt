@@ -4,16 +4,9 @@ project(DummySignalAnalyzer VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find Qt6
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
-
-# Set automoc
-set(CMAKE_AUTOMOC ON)
-
 # Plugin source files
 set(PLUGIN_SOURCES
     dummysignalanalyzer.cpp
-    ../../iplugininterface.cpp
 )
 
 set(PLUGIN_HEADERS
@@ -25,12 +18,6 @@ set(PLUGIN_HEADERS
 add_library(dummy SHARED
     ${PLUGIN_SOURCES}
     ${PLUGIN_HEADERS}
-)
-
-# Link Qt libraries
-target_link_libraries(dummy
-    Qt6::Core
-    Qt6::Widgets
 )
 
 # Include directories

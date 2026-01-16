@@ -4,7 +4,13 @@ This guide explains how to create instrument plugins for the Antenna Tester GUI 
 
 ## Overview
 
-The Antenna Tester GUI supports dynamic loading of instrument plugins for Signal Analyzers, Signal Generators, and Positioners. Plugins are DLL libraries that implement standard interfaces defined by the application.
+The Antenna Tester GUI supports dynamic loading of instrument plugins for Signal Analyzers, Signal Generators, and Positioners. Plugins are DLL libraries that implement standard C++ interfaces without requiring Qt dependencies.
+
+**Key Features:**
+- **No Qt Dependency**: Plugins can be developed using standard C++ without Qt
+- **Standard C++ Types**: Uses `std::string`, `std::vector`, and `std::function`
+- **Callback-based Events**: Replaces Qt signals/slots with C++ function callbacks
+- **Cross-platform Compatible**: Can be built with any C++17 compiler
 
 ## Plugin Structure
 
@@ -78,16 +84,13 @@ Include the plugin interface header:
 ```cpp
 class MySignalAnalyzerPlugin : public ISignalAnalyzerPlugin
 {
-    Q_OBJECT
-    Q_INTERFACES(ISignalAnalyzerPlugin)
-    
 public:
     MySignalAnalyzerPlugin();
     virtual ~MySignalAnalyzerPlugin();
     
     // Device discovery
-    QVector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const QString &address) override;
+    std::vector<DeviceInfo> scanDevices() override;
+    bool connectToDevice(const std::string &address) override;
 
     // Connection management
     bool connect() override;
@@ -102,29 +105,64 @@ public:
     // Measurement
     Peak findPeak() override;
     
-signals:
-    void connected() override;
-    void disconnected() override;
-    void peakFound(const Peak &peak) override;
-    void errorOccurred(const QString &error) override;
+    // Note: Event callbacks are optional and can be set by the host application
+    // onConnected, onDisconnected, onPeakFound, onError, onDevicesScanned
     
 private:
     // Your implementation details
 };
 ```
 
+### Event Callbacks
+
+The plugin interface provides callback functions that can be set by the host application:
+
+```cpp
+// In your implementation, trigger callbacks when events occur:
+void MySignalAnalyzerPlugin::connect() {
+    // ... connection logic ...
+    if (onConnected) {
+        onConnected();
+    }
+}
+
+void MySignalAnalyzerPlugin::disconnect() {
+    // ... disconnection logic ...
+    if (onDisconnected) {
+        onDisconnected();
+    }
+}
+
+std::vector<DeviceInfo> MySignalAnalyzerPlugin::scanDevices() {
+    // ... scan logic ...
+    std::vector<DeviceInfo> devices = /* ... */;
+    
+    if (onDevicesScanned) {
+        onDevicesScanned(devices);
+    }
+    
+    return devices;
+}
+```
+
 ### Required Export Functions
 
 ```cpp
 extern "C" {
-    __declspec(dllexport) ISignalAnalyzerPlugin* createSignalAnalyzerPlugin()
+    #ifdef _WIN32
+        __declspec(dllexport)
+    #endif
+    ISignalAnalyzerPlugin* createSignalAnalyzerPlugin()
     {
         return new MySignalAnalyzerPlugin();
     }
     
-    __declspec(dllexport) void destroyPlugin(QObject* plugin)
+    #ifdef _WIN32
+        __declspec(dllexport)
+    #endif
+    void destroyPlugin(void* plugin)
     {
-        delete plugin;
+        delete static_cast<ISignalAnalyzerPlugin*>(plugin);
     }
 }
 ```
@@ -136,16 +174,13 @@ extern "C" {
 ```cpp
 class MySignalGeneratorPlugin : public ISignalGeneratorPlugin
 {
-    Q_OBJECT
-    Q_INTERFACES(ISignalGeneratorPlugin)
-    
 public:
     MySignalGeneratorPlugin();
     virtual ~MySignalGeneratorPlugin();
     
     // Device discovery
-    QVector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const QString &address) override;
+    std::vector<DeviceInfo> scanDevices() override;
+    bool connectToDevice(const std::string &address) override;
 
     // Connection management
     bool connect() override;
@@ -161,12 +196,8 @@ public:
     void disableRf() override;
     bool isRfEnabled() const override;
     
-signals:
-    void connected() override;
-    void disconnected() override;
-    void rfEnabled() override;
-    void rfDisabled() override;
-    void errorOccurred(const QString &error) override;
+    // Note: Event callbacks are optional and can be set by the host application
+    // onConnected, onDisconnected, onRfEnabled, onRfDisabled, onError, onDevicesScanned
     
 private:
     // Your implementation details
@@ -177,14 +208,20 @@ private:
 
 ```cpp
 extern "C" {
-    __declspec(dllexport) ISignalGeneratorPlugin* createSignalGeneratorPlugin()
+    #ifdef _WIN32
+        __declspec(dllexport)
+    #endif
+    ISignalGeneratorPlugin* createSignalGeneratorPlugin()
     {
         return new MySignalGeneratorPlugin();
     }
     
-    __declspec(dllexport) void destroyPlugin(QObject* plugin)
+    #ifdef _WIN32
+        __declspec(dllexport)
+    #endif
+    void destroyPlugin(void* plugin)
     {
-        delete plugin;
+        delete static_cast<ISignalGeneratorPlugin*>(plugin);
     }
 }
 ```
@@ -194,18 +231,15 @@ extern "C" {
 ### Interface Implementation
 
 ```cpp
-class MyPositionerPlugin : public ISignalGeneratorPlugin
+class MyPositionerPlugin : public IPositionerPlugin
 {
-    Q_OBJECT
-    Q_INTERFACES(ISignalGeneratorPlugin)
-    
 public:
     MyPositionerPlugin();
     virtual ~MyPositionerPlugin();
     
     // Device discovery
-    QVector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const QString &address) override;
+    std::vector<DeviceInfo> scanDevices() override;
+    bool connectToDevice(const std::string &address) override;
     
     // Connection management
     bool connect() override;
@@ -224,13 +258,9 @@ public:
     void start() override;
     void stop() override;
     
-signals:
-    void connected();
-    void disconnected();
-    void movementStarted();
-    void movementStopped();
-    void positionChanged(double az, double el, double pol);
-    void errorOccurred(const QString &error);
+    // Note: Event callbacks are optional and can be set by the host application
+    // onConnected, onDisconnected, onMovementStarted, onMovementStopped, 
+    // onPositionChanged, onError, onDevicesScanned
     
 private:
     // Your implementation details
@@ -241,14 +271,20 @@ private:
 
 ```cpp
 extern "C" {
-    __declspec(dllexport) IPositionerPlugin* createPositionerPlugin()
+    #ifdef _WIN32
+        __declspec(dllexport)
+    #endif
+    IPositionerPlugin* createPositionerPlugin()
     {
         return new MyPositionerPlugin();
     }
     
-    __declspec(dllexport) void destroyPlugin(QObject* plugin)
+    #ifdef _WIN32
+        __declspec(dllexport)
+    #endif
+    void destroyPlugin(void* plugin)
     {
-        delete plugin;
+        delete static_cast<IPositionerPlugin*>(plugin);
     }
 }
 ```
@@ -274,9 +310,8 @@ The application validates plugins automatically:
 ## Build Requirements
 
 ### Dependencies
-- Qt 6.x
-- MinGW or MSVC compiler
-- Qt Core and Qt Widgets modules
+- **C++17 Compiler** (MSVC, MinGW, GCC, Clang, etc.)
+- **No Qt Dependency Required** - Plugins use only standard C++
 
 ### Compiler Flags
 ```cmake
@@ -288,23 +323,117 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ```cmake
 cmake_minimum_required(VERSION 3.16)
-project(MyPlugin)
+project(MyPlugin VERSION 1.0.0)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(my_plugin SHARED
+# Plugin source files
+set(PLUGIN_SOURCES
     my_plugin.cpp
+)
+
+set(PLUGIN_HEADERS
     my_plugin.h
+    ../../iplugininterface.h
 )
 
-target_link_libraries(my_plugin
-    Qt6::Core
-    Qt6::Widgets
+# Create shared library (DLL)
+add_library(my_plugin SHARED
+    ${PLUGIN_SOURCES}
+    ${PLUGIN_HEADERS}
 )
 
-target_compile_definitions(my_plugin PRIVATE
-    MY_PLUGIN_LIBRARY
+# Include directories
+target_include_directories(my_plugin PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../
 )
+
+# Set output name
+set_target_properties(my_plugin PROPERTIES
+    OUTPUT_NAME "my_plugin"
+    PREFIX ""
+)
+
+# Windows specific settings
+if(WIN32)
+    set_target_properties(my_plugin PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/Debug"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/Release"
+    )
+endif()
+
+# Install rules
+install(TARGETS my_plugin
+    RUNTIME DESTINATION instruments/signalgenerator/my_plugin
+    LIBRARY DESTINATION instruments/signalgenerator/my_plugin
+)
+
+install(FILES my_plugin.json
+    DESTINATION instruments/signalgenerator/my_plugin
+)
+```
+
+## Key Differences from Qt-based Plugins
+
+### Types Mapping
+
+| Old Qt Type | New Standard C++ Type |
+|------------|----------------------|
+| `QString` | `std::string` |
+| `QVector<T>` | `std::vector<T>` |
+| `QObject*` | `void*` (in destroy function) |
+
+### Event Handling
+
+**Old (Qt Signals):**
+```cpp
+signals:
+    void connected();
+    void disconnected();
+    
+// In implementation:
+emit connected();
+```
+
+**New (Callbacks):**
+```cpp
+// In implementation:
+if (onConnected) {
+    onConnected();
+}
+```
+
+### Logging
+
+**Old (Qt Debug):**
+```cpp
+#include <QDebug>
+qDebug() << "Message";
+qWarning() << "Warning";
+```
+
+**New (Standard C++):**
+```cpp
+#include <iostream>
+std::cout << "Message" << std::endl;
+std::cerr << "Warning" << std::endl;
+```
+
+### Threading/Delays
+
+**Old (Qt Thread):**
+```cpp
+#include <QThread>
+QThread::msleep(100);
+```
+
+**New (Standard C++):**
+```cpp
+#include <thread>
+#include <chrono>
+std::this_thread::sleep_for(std::chrono::milliseconds(100));
 ```
 
 ## Testing Your Plugin
@@ -320,10 +449,10 @@ target_compile_definitions(my_plugin PRIVATE
 
 ## Example Implementation
 
-See the this directories for example plugin implementations:
-- `signalanalyzer/dummy/` - Dummy signal analyzer plugin
-- `signalgenerator/dummy/` - Dummy signal generator plugin
-- `positioner/dummy/` - Dummy signal generator plugin
+See these directories for example plugin implementations:
+- `signalgenerator/signalcore_sc5511a/` - SignalCore SC5511A signal generator plugin (Qt-independent)
+- `signalanalyzer/dummy/` - Dummy signal analyzer plugin (Qt-independent)
+- `positioner/dummy/` - Dummy positioner plugin (Qt-independent)
 
 ## Troubleshooting
 
@@ -334,14 +463,19 @@ See the this directories for example plugin implementations:
 **Plugin shows "Invalid Interface"**
 - Ensure factory functions are exported correctly
 - Verify the plugin implements all required interface methods
-- Check that Q_INTERFACES macro is present
+- Check that function signatures match the interface exactly
 
 **Plugin shows "Load Error"**
-- Check DLL dependencies (use Dependency Walker)
-- Verify Qt version compatibility
-- Ensure correct compiler (MinGW/MSVC) matches application
+- Check DLL dependencies (use Dependency Walker on Windows)
+- Verify C++ runtime compatibility
+- Ensure correct compiler architecture (x86/x64) matches application
 
 **Plugin loads but doesn't connect**
 - Check hardware connection settings
 - Review plugin's connect() implementation
-- Enable debug logging to see error messages
+- Enable debug logging (std::cout/std::cerr) to see error messages
+
+**Compilation Errors**
+- Ensure C++17 is enabled in your compiler settings
+- Include all necessary headers (`<string>`, `<vector>`, `<functional>`, etc.)
+- On Windows, include `<Windows.h>` if using Windows-specific APIs
