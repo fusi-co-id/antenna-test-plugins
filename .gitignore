@@ -2,3 +2,4 @@
 /signalgenerator/*/build/
 /positioner/*/build/
 /dist/*.zip
+/build/
