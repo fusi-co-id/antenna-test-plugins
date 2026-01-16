@@ -451,6 +451,7 @@ std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 See these directories for example plugin implementations:
 - `signalgenerator/signalcore_sc5511a/` - SignalCore SC5511A signal generator plugin (Qt-independent)
+- `signalgenerator/dummy/` - Dummy signal generator plugin (Qt-independent)
 - `signalanalyzer/dummy/` - Dummy signal analyzer plugin (Qt-independent)
 - `positioner/dummy/` - Dummy positioner plugin (Qt-independent)
 

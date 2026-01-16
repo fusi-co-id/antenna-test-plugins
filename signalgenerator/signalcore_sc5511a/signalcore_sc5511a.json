@@ -1,0 +1,12 @@
+{
+    "name": "SignalCore SC5511A Signal Generator",
+    "vendor": "FUSI Development",
+    "series": "SignalCore SC5511A",
+    "type": "LAN",
+    "author": "Yan Syafri Hidayat",
+    "email": "yansyaf@gmail.com",
+    "version": "1.0.0",
+    "description": "A SignalCore SC5511A signal generator plugin.",
+    "url": "https://www.fusi.co.id",
+    "license": "MIT"
+}
