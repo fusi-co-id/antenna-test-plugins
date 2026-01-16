@@ -54,9 +54,16 @@ public:
     void setMovement(const Movement &movement) override;
     void setDistance(double distance) override;
     
+    // Get Position
+    double getCurrentAZ() const override;
+    double getCurrentEL() const override;
+    double getCurrentPOL() const override;
+    
     // Control
     void start() override;
     void stop() override;
+    void moveTo(double azimuth, double elevation) override;
+    void moveTo(double azimuth, double elevation, double polar) override;
     
 private:
     void movementThread();

@@ -232,6 +232,168 @@ void DummyPositioner::setDistance(double distance)
     std::cout << "[Dummy Positioner Plugin] Distance set to " << distance << std::endl;
 }
 
+double DummyPositioner::getCurrentAZ() const
+{
+    return m_currentAZ;
+}
+
+double DummyPositioner::getCurrentEL() const
+{
+    return m_currentEL;
+}
+
+double DummyPositioner::getCurrentPOL() const
+{
+    return m_currentPOL;
+}
+
+void DummyPositioner::moveTo(double azimuth, double elevation)
+{
+    if (!m_isConnected) {
+        std::cerr << "[Dummy Positioner Plugin] Cannot move - not connected" << std::endl;
+        if (onError) {
+            onError("Positioner not connected");
+        }
+        return;
+    }
+    
+    std::cout << "[Dummy Positioner Plugin] Moving to position: AZ=" << azimuth << "° EL=" << elevation << "°" << std::endl;
+    
+    // Stop any existing movement
+    if (m_isMoving) {
+        stop();
+    }
+    
+    // Calculate movement direction
+    m_currentMovement.AZ = (azimuth > m_currentAZ) ? 1.0 : -1.0;
+    m_currentMovement.EL = (elevation > m_currentEL) ? 1.0 : -1.0;
+    m_currentMovement.POL = 0.0; // Don't change polarization
+    
+    // Start movement
+    m_isMoving = true;
+    m_stepCount = 0;
+    
+    // Start movement thread with target position
+    m_movementThread = std::thread([this, azimuth, elevation]() {
+        while (m_isMoving) {
+            // Calculate distance to target
+            double azDiff = azimuth - m_currentAZ;
+            double elDiff = elevation - m_currentEL;
+            
+            // Check if we're close enough
+            if (std::abs(azDiff) < m_step.AZ && std::abs(elDiff) < m_step.EL) {
+                m_currentAZ = azimuth;
+                m_currentEL = elevation;
+                std::cout << "[Dummy Positioner Plugin] Target position reached" << std::endl;
+                m_isMoving = false;
+                break;
+            }
+            
+            // Move one step toward target
+            if (std::abs(azDiff) >= m_step.AZ) {
+                m_currentAZ += (azDiff > 0 ? m_step.AZ : -m_step.AZ);
+            }
+            if (std::abs(elDiff) >= m_step.EL) {
+                m_currentEL += (elDiff > 0 ? m_step.EL : -m_step.EL);
+            }
+            
+            m_stepCount++;
+            
+            // Emit position changed callback
+            if (onPositionChanged) {
+                onPositionChanged(m_currentAZ, m_currentEL, m_currentPOL);
+            }
+            
+            // Sleep for 100ms between steps
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        
+        if (onMovementStopped) {
+            onMovementStopped();
+        }
+    });
+    
+    if (onMovementStarted) {
+        onMovementStarted();
+    }
+}
+
+void DummyPositioner::moveTo(double azimuth, double elevation, double polar)
+{
+    if (!m_isConnected) {
+        std::cerr << "[Dummy Positioner Plugin] Cannot move - not connected" << std::endl;
+        if (onError) {
+            onError("Positioner not connected");
+        }
+        return;
+    }
+    
+    std::cout << "[Dummy Positioner Plugin] Moving to position: AZ=" << azimuth << "° EL=" << elevation << "° POL=" << polar << "°" << std::endl;
+    
+    // Stop any existing movement
+    if (m_isMoving) {
+        stop();
+    }
+    
+    // Calculate movement direction
+    m_currentMovement.AZ = (azimuth > m_currentAZ) ? 1.0 : -1.0;
+    m_currentMovement.EL = (elevation > m_currentEL) ? 1.0 : -1.0;
+    m_currentMovement.POL = (polar > m_currentPOL) ? 1.0 : -1.0;
+    
+    // Start movement
+    m_isMoving = true;
+    m_stepCount = 0;
+    
+    // Start movement thread with target position
+    m_movementThread = std::thread([this, azimuth, elevation, polar]() {
+        while (m_isMoving) {
+            // Calculate distance to target
+            double azDiff = azimuth - m_currentAZ;
+            double elDiff = elevation - m_currentEL;
+            double polDiff = polar - m_currentPOL;
+            
+            // Check if we're close enough
+            if (std::abs(azDiff) < m_step.AZ && std::abs(elDiff) < m_step.EL && std::abs(polDiff) < m_step.POL) {
+                m_currentAZ = azimuth;
+                m_currentEL = elevation;
+                m_currentPOL = polar;
+                std::cout << "[Dummy Positioner Plugin] Target position reached" << std::endl;
+                m_isMoving = false;
+                break;
+            }
+            
+            // Move one step toward target
+            if (std::abs(azDiff) >= m_step.AZ) {
+                m_currentAZ += (azDiff > 0 ? m_step.AZ : -m_step.AZ);
+            }
+            if (std::abs(elDiff) >= m_step.EL) {
+                m_currentEL += (elDiff > 0 ? m_step.EL : -m_step.EL);
+            }
+            if (std::abs(polDiff) >= m_step.POL) {
+                m_currentPOL += (polDiff > 0 ? m_step.POL : -m_step.POL);
+            }
+            
+            m_stepCount++;
+            
+            // Emit position changed callback
+            if (onPositionChanged) {
+                onPositionChanged(m_currentAZ, m_currentEL, m_currentPOL);
+            }
+            
+            // Sleep for 100ms between steps
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        
+        if (onMovementStopped) {
+            onMovementStopped();
+        }
+    });
+    
+    if (onMovementStarted) {
+        onMovementStarted();
+    }
+}
+
 void DummyPositioner::start()
 {
     if (!m_isConnected) {

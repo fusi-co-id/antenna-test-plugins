@@ -168,10 +168,17 @@ public:
     virtual void setMaxRange(const MaxRange &maxRange) = 0;
     virtual void setMovement(const Movement &movement) = 0;
     virtual void setDistance(double distance) = 0;
+
+    // Get Position
+    virtual double getCurrentAZ() const = 0;
+    virtual double getCurrentEL() const = 0;
+    virtual double getCurrentPOL() const = 0;
     
     // Control
     virtual void start() = 0;
     virtual void stop() = 0;
+    virtual void moveTo(double azimuth, double elevation) = 0;
+    virtual void moveTo(double azimuth, double elevation, double polar) = 0;
     
     // Callback functions for events (optional, can be nullptr)
     std::function<void()> onConnected;
