@@ -84,20 +84,20 @@ std::vector<DeviceInfo> DummyPositioner::scanDevices()
     // Simulate 1 LAN device
     DeviceInfo device1;
     device1.name = "Dummy Positioner-AZ/EL";
-    device1.serialNumber = "DPS-002468";
+    device1.serialNumber = "DPS-1000";
     device1.address = "192.168.1.120";
     device1.type = "LAN";
     device1.isAvailable = true;
     devices.push_back(device1);
     
-    // Simulate 1 Serial device
-    DeviceInfo device2;
-    device2.name = "Dummy Positioner-6DOF";
-    device2.serialNumber = "DPS-SER-1357";
-    device2.address = "COM3";
-    device2.type = "Serial";
-    device2.isAvailable = true;
-    devices.push_back(device2);
+    // // Simulate 1 Serial device
+    // DeviceInfo device2;
+    // device2.name = "Dummy Positioner-6DOF";
+    // device2.serialNumber = "DPS-2000";
+    // device2.address = "COM3";
+    // device2.type = "Serial";
+    // device2.isAvailable = true;
+    // devices.push_back(device2);
     
     std::cout << "[Dummy Positioner Plugin] Found " << devices.size() << " devices" << std::endl;
     

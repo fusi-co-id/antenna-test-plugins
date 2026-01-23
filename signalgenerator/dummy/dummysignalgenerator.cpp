@@ -47,29 +47,29 @@ std::vector<DeviceInfo> DummySignalGenerator::scanDevices()
     
     // Simulate 2 LAN devices
     DeviceInfo device1;
-    device1.name = "Dummy SG-3000";
-    device1.serialNumber = "DSG-001122";
+    device1.name = "Dummy SG-1000";
+    device1.serialNumber = "DSG-1000";
     device1.address = "192.168.1.110";
     device1.type = "LAN";
     device1.isAvailable = true;
     devices.push_back(device1);
     
-    DeviceInfo device2;
-    device2.name = "Dummy SG-5000";
-    device2.serialNumber = "DSG-003344";
-    device2.address = "192.168.1.111";
-    device2.type = "LAN";
-    device2.isAvailable = true;
-    devices.push_back(device2);
+    // DeviceInfo device2;
+    // device2.name = "Dummy SG-5000";
+    // device2.serialNumber = "DSG-5000";
+    // device2.address = "192.168.1.111";
+    // device2.type = "LAN";
+    // device2.isAvailable = true;
+    // devices.push_back(device2);
     
-    // Simulate 1 USB device
-    DeviceInfo device3;
-    device3.name = "Dummy SG-USB";
-    device3.serialNumber = "DSG-USB-7890";
-    device3.address = "USB0::0x5678::0x1234::DSG-USB-7890::INSTR";
-    device3.type = "USB";
-    device3.isAvailable = true;
-    devices.push_back(device3);
+    // // Simulate 1 USB device
+    // DeviceInfo device3;
+    // device3.name = "Dummy SG-USB";
+    // device3.serialNumber = "DSG-USB-7890";
+    // device3.address = "USB0::0x5678::0x1234::DSG-USB-7890::INSTR";
+    // device3.type = "USB";
+    // device3.isAvailable = true;
+    // devices.push_back(device3);
     
     std::cout << "[Dummy SG Plugin] Found " << devices.size() << " devices" << std::endl;
     

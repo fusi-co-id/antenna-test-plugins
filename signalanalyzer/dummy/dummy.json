@@ -1,7 +1,7 @@
 {
     "name": "Dummy Signal Analyzer",
     "vendor": "FUSI Development",
-    "series": "Dummy SA-1000",
+    "series": "DSA-1000",
     "type": "LAN",
     "author": "Yan Syafri Hidayat",
     "email": "yansyaf@gmail.com",

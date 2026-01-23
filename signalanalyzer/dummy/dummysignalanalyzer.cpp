@@ -59,28 +59,28 @@ std::vector<DeviceInfo> DummySignalAnalyzer::scanDevices()
     // Simulate 2-3 LAN devices
     DeviceInfo device1;
     device1.name = "Dummy SA-1000";
-    device1.serialNumber = "DSA-001234";
+    device1.serialNumber = "DSA-1000";
     device1.address = "192.168.1.100";
     device1.type = "LAN";
     device1.isAvailable = true;
     devices.push_back(device1);
     
-    DeviceInfo device2;
-    device2.name = "Dummy SA-2000";
-    device2.serialNumber = "DSA-005678";
-    device2.address = "192.168.1.101";
-    device2.type = "LAN";
-    device2.isAvailable = true;
-    devices.push_back(device2);
+    // DeviceInfo device2;
+    // device2.name = "Dummy SA-2000";
+    // device2.serialNumber = "DSA-2000";
+    // device2.address = "192.168.1.101";
+    // device2.type = "LAN";
+    // device2.isAvailable = true;
+    // devices.push_back(device2);
     
-    // Simulate 1 USB device
-    DeviceInfo device3;
-    device3.name = "Dummy SA-USB";
-    device3.serialNumber = "DSA-USB-9012";
-    device3.address = "USB0::0x1234::0x5678::DSA-USB-9012::INSTR";
-    device3.type = "USB";
-    device3.isAvailable = true;
-    devices.push_back(device3);
+    // // Simulate 1 USB device
+    // DeviceInfo device3;
+    // device3.name = "Dummy SA-USB";
+    // device3.serialNumber = "DSA-USB-9012";
+    // device3.address = "USB0::0x1234::0x5678::DSA-USB-9012::INSTR";
+    // device3.type = "USB";
+    // device3.isAvailable = true;
+    // devices.push_back(device3);
     
     std::cout << "[Dummy SA Plugin] Found " << devices.size() << " devices" << std::endl;
     
