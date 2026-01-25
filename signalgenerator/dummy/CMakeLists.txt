@@ -63,9 +63,11 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/package/dummy
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dummy> ${CMAKE_CURRENT_BINARY_DIR}/package/dummy/
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/dummy.json ${CMAKE_CURRENT_BINARY_DIR}/package/dummy/
+        COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "Checking for PDB file to include in zip..."
+        COMMAND if exist ${CMAKE_CURRENT_BINARY_DIR}/Debug/dummy.pdb ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/Debug/dummy.pdb ${CMAKE_CURRENT_BINARY_DIR}/package/dummy/
         COMMAND powershell -Command "Compress-Archive -Path '${CMAKE_CURRENT_BINARY_DIR}/package/dummy' -DestinationPath '${CMAKE_CURRENT_BINARY_DIR}/dummy-plugin.zip' -Force"
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/package
-        COMMENT "Creating dummy-plugin.zip"
+        COMMENT "Creating dummy-plugin.zip (DLL, JSON, and PDB if Debug)"
     )
 else()
     add_custom_command(TARGET dummy POST_BUILD

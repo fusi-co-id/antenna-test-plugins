@@ -73,10 +73,11 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/signalcore_sc5511a.json ${CMAKE_CURRENT_BINARY_DIR}/package/signalcore_sc5511a/
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/x64 ${CMAKE_CURRENT_BINARY_DIR}/package/signalcore_sc5511a/x64
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/Release/signalcore_sc5511a.exp ${CMAKE_CURRENT_BINARY_DIR}/package/signalcore_sc5511a/
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/Release/signalcore_sc5511a.pdb ${CMAKE_CURRENT_BINARY_DIR}/package/signalcore_sc5511a/
+        COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "Checking for PDB file to include in zip..."
+        COMMAND if exist ${CMAKE_CURRENT_BINARY_DIR}/Debug/signalcore_sc5511a.pdb ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/Debug/signalcore_sc5511a.pdb ${CMAKE_CURRENT_BINARY_DIR}/package/signalcore_sc5511a/
         COMMAND powershell -Command "Compress-Archive -Path '${CMAKE_CURRENT_BINARY_DIR}/package/signalcore_sc5511a' -DestinationPath '${CMAKE_CURRENT_BINARY_DIR}/signalcore_sc5511a-plugin.zip' -Force"
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/package
-        COMMENT "Creating signalcore_sc5511a-plugin.zip"
+        COMMENT "Creating signalcore_sc5511a-plugin.zip (DLL, JSON, and PDB if Debug)"
     )
 else()
     add_custom_command(TARGET signalcore_sc5511a POST_BUILD

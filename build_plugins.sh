@@ -1,6 +1,15 @@
 #!/bin/bash
 
-# Build all plugins for Linux
+
+# Build all plugins for Linux/Windows
+
+# Parse build type argument
+BUILD_TYPE="Release"
+if [ "$1" == "--debug" ]; then
+    BUILD_TYPE="Debug"
+elif [ "$1" == "--release" ]; then
+    BUILD_TYPE="Release"
+fi
 
 echo "============================================"
 echo "Building Antenna Tester GUI Plugins"
@@ -88,16 +97,14 @@ for category in $PLUGIN_CATEGORIES; do
             continue
         fi
 
-        cmake --build . --config Release
+        cmake --build . --config $BUILD_TYPE
         if [ $? -ne 0 ]; then
             echo "ERROR: Build failed for $category/$plugin_name plugin"
             continue
         fi
 
-    echo ""
-        echo "$category/$plugin_name plugin built successfully!"
-        echo "Location: $(pwd)/lib$plugin_name.so"
-        
+        echo ""
+        echo "$category/$plugin_name plugin built successfully! (Config: $BUILD_TYPE)"
         BUILD_COUNT=$((BUILD_COUNT + 1))
     done
 done
@@ -113,13 +120,23 @@ for category in $PLUGIN_CATEGORIES; do
     for plugin_dir in "$SCRIPT_DIR/$category"/*/; do
         plugin_name=$(basename "$plugin_dir")
         ZIP_SOURCE="$plugin_dir/build/$plugin_name-plugin.zip"
+        ZIP_SOURCE_ALT="$plugin_dir/build/dummy-plugin.zip"
         ZIP_DEST="$SCRIPT_DIR/dist/$category-$plugin_name-plugin.zip"
-        
+
+        # If Debug build, look in Debug subdir for zip if it exists
+        if [ "$BUILD_TYPE" == "Debug" ]; then
+            if [ -f "$plugin_dir/build/Debug/$plugin_name-plugin.zip" ]; then
+                ZIP_SOURCE="$plugin_dir/build/Debug/$plugin_name-plugin.zip"
+            elif [ -f "$plugin_dir/build/Debug/dummy-plugin.zip" ]; then
+                ZIP_SOURCE="$plugin_dir/build/Debug/dummy-plugin.zip"
+            fi
+        fi
+
         # Try alternative ZIP file names
         if [ ! -f "$ZIP_SOURCE" ]; then
-            ZIP_SOURCE="$plugin_dir/build/dummy-plugin.zip"
+            ZIP_SOURCE="$ZIP_SOURCE_ALT"
         fi
-        
+
         if [ -f "$ZIP_SOURCE" ]; then
             echo "Copying $category/$plugin_name plugin..."
             cp "$ZIP_SOURCE" "$ZIP_DEST"
@@ -128,7 +145,7 @@ for category in $PLUGIN_CATEGORIES; do
             ZIP_COUNT=$((ZIP_COUNT + 1))
         else
             echo "WARNING: ZIP file not found for $category/$plugin_name"
-            echo "  Checked: $plugin_dir/build/"
+            echo "  Checked: $plugin_dir/build/ and $plugin_dir/build/Debug/"
         fi
     done
 done

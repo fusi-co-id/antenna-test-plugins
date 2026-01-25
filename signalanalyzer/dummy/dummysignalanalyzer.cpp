@@ -182,6 +182,8 @@ void DummySignalAnalyzer::setRBW(double freqHz)
 Peak DummySignalAnalyzer::findPeak()
 {
     Peak peak;
+    peak.frequencyHz = 0.0;
+    peak.leveldBm = -100.0;
     
     if (!m_isConnected) {
         std::cerr << "[Dummy SA Plugin] Cannot find peak - not connected" << std::endl;
