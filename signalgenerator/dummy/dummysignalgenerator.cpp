@@ -73,9 +73,17 @@ std::vector<DeviceInfo> DummySignalGenerator::scanDevices()
     
     std::cout << "[Dummy SG Plugin] Found " << devices.size() << " devices" << std::endl;
     
-    if (onDevicesScanned) {
-        onDevicesScanned(devices);
-    }
+    // if (onDevicesScanned) {
+    //     try {
+    //         onDevicesScanned(devices);
+    //     } catch (const std::exception& ex) {
+    //         std::cerr << "[Dummy SG Plugin] Exception in onDevicesScanned callback: " << ex.what() << std::endl;
+    //     } catch (...) {
+    //         std::cerr << "[Dummy SG Plugin] Unknown exception in onDevicesScanned callback" << std::endl;
+    //     }
+    // } else {
+    //     std::cerr << "[Dummy SG Plugin] onDevicesScanned callback is not set" << std::endl;
+    // }
     return devices;
 }
 
