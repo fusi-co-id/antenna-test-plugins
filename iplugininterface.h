@@ -33,8 +33,9 @@ struct DeviceInfo {
     std::string name;           // Device name/model
     std::string serialNumber;   // Serial number or unique identifier
     std::string address;        // IP address, COM port, USB path, etc.
+    std::string port;           // Port for IP based.
     std::string type;           // Connection type (LAN, USB, GPIB, Serial, etc.)
-    bool isAvailable;       // Whether device is available for connection
+    bool isAvailable;           // Whether device is available for connection
     
     DeviceInfo() : isAvailable(true) {}
 };
@@ -46,40 +47,13 @@ struct Peak {
 };
 
 // Positioner data structures
-struct Step {
+struct Position {
     double AZ;
     double EL;
     double POL;
     double X;
     double Y;
-    double V;
-};
-
-struct MinRange {
-    double AZ;
-    double EL;
-    double POL;
-    double X;
-    double Y;
-    double V;
-};
-
-struct MaxRange {
-    double AZ;
-    double EL;
-    double POL;
-    double X;
-    double Y;
-    double V;
-};
-
-struct Movement {
-    double AZ;
-    double EL;
-    double POL;
-    double X;
-    double Y;
-    double V;
+    double Z;
 };
 
 // Plugin interface for Signal Analyzer
@@ -90,7 +64,7 @@ public:
     
     // Device discovery
     virtual std::vector<DeviceInfo> scanDevices() = 0;
-    virtual bool connectToDevice(const std::string &address) = 0;
+    virtual bool connectToDevice(const std::string &address, const std::string &port) = 0;
     
     // Connection management
     virtual bool connect() = 0;
@@ -121,7 +95,7 @@ public:
     
     // Device discovery
     virtual std::vector<DeviceInfo> scanDevices() = 0;
-    virtual bool connectToDevice(const std::string &address) = 0;
+    virtual bool connectToDevice(const std::string &address, const std::string &port) = 0;
     
     // Connection management
     virtual bool connect() = 0;
@@ -154,38 +128,37 @@ public:
     
     // Device discovery
     virtual std::vector<DeviceInfo> scanDevices() = 0;
-    virtual bool connectToDevice(const std::string &address) = 0;
+    virtual bool connectToDevice(const std::string &address, const std::string &port) = 0;
     
     // Connection management
-    virtual bool connect() = 0;
     virtual void disconnect() = 0;
     virtual bool isConnected() const = 0;
     
     // Configuration
-    virtual void setAZStep(double degrees) = 0;
-    virtual void setStep(const Step &step) = 0;
-    virtual void setMinRange(const MinRange &minRange) = 0;
-    virtual void setMaxRange(const MaxRange &maxRange) = 0;
-    virtual void setMovement(const Movement &movement) = 0;
-    virtual void setDistance(double distance) = 0;
-
+    virtual void setTxStep(const Position &step) = 0;
+    virtual void setTxMinRange(const Position &minRange) = 0;
+    virtual void setTxMaxRange(const Position &maxRange) = 0;    
+    virtual void setRxStep(const Position &step) = 0;
+    virtual void setRxMinRange(const Position &minRange) = 0;
+    virtual void setRxMaxRange(const Position &maxRange) = 0;
+    
     // Get Position
-    virtual double getCurrentAZ() const = 0;
-    virtual double getCurrentEL() const = 0;
-    virtual double getCurrentPOL() const = 0;
+    virtual Position getCurrentTxPosition() const = 0;
+    virtual Position getCurrentRxPosition() const = 0;
     
     // Control
-    virtual void start() = 0;
-    virtual void stop() = 0;
-    virtual void moveTo(double azimuth, double elevation) = 0;
-    virtual void moveTo(double azimuth, double elevation, double polar) = 0;
+    virtual void moveTxToPosition(const Position &position) = 0;
+    virtual void moveRxToPosition(const Position &position) = 0;
     
     // Callback functions for events (optional, can be nullptr)
     std::function<void()> onConnected;
     std::function<void()> onDisconnected;
-    std::function<void()> onMovementStarted;
-    std::function<void()> onMovementStopped;
-    std::function<void(double, double, double)> onPositionChanged;
+    std::function<void()> onTxMovementStarted;
+    std::function<void()> onTxMovementStopped;
+    std::function<void()> onRxMovementStarted;
+    std::function<void()> onRxMovementStopped;
+    std::function<void(const Position&)> onTxPositionChanged;
+    std::function<void(const Position&)> onRxPositionChanged;
     std::function<void(const std::string&)> onError;
     std::function<void(const std::vector<DeviceInfo>&)> onDevicesScanned;
 };

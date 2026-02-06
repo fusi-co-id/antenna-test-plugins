@@ -31,7 +31,7 @@ DummySignalGenerator::DummySignalGenerator()
     , m_rfEnabled(false)
     , m_freqHz(5510.0e6)  // 5510 MHz default
     , m_powerDbm(0.0)     // 0 dBm default
-    , m_connectedAddress("")
+    , m_connectedIPAddress("")
 {
     std::cout << "[Dummy SG Plugin] Instance created" << std::endl;
 }
@@ -87,22 +87,22 @@ std::vector<DeviceInfo> DummySignalGenerator::scanDevices()
     return devices;
 }
 
-bool DummySignalGenerator::connectToDevice(const std::string &address)
+bool DummySignalGenerator::connectToDevice(const std::string &address, const std::string &port)
 {
     if (m_isConnected) {
-        std::cerr << "[Dummy SG Plugin] Already connected to " << m_connectedAddress << std::endl;
+        std::cerr << "[Dummy SG Plugin] Already connected to " << m_connectedIPAddress << std::endl;
         return false;
     }
     
-    std::cout << "[Dummy SG Plugin] Connecting to device at: " << address << std::endl;
+    std::cout << "[Dummy SG Plugin] Connecting to device at: " << address << " on port: " << port << std::endl;
     
     // Simulate connection delay
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     
-    m_connectedAddress = address;
+    m_connectedIPAddress = address;
     m_isConnected = true;
     
-    std::cout << "[Dummy SG Plugin] Connected successfully to " << address << std::endl;
+    std::cout << "[Dummy SG Plugin] Connected successfully to " << address << " on port: " << port << std::endl;
     if (onConnected) {
         onConnected();
     }
@@ -158,10 +158,10 @@ void DummySignalGenerator::disconnect()
         disableRf();
     }
     
-    std::cout << "[Dummy SG Plugin] Disconnecting from " << m_connectedAddress << std::endl;
+    std::cout << "[Dummy SG Plugin] Disconnecting from " << m_connectedIPAddress << std::endl;
     
     m_isConnected = false;
-    m_connectedAddress.clear();
+    m_connectedIPAddress.clear();
     
     std::cout << "[Dummy SG Plugin] Disconnected" << std::endl;
     if (onDisconnected) {

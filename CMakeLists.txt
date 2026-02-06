@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Test application
 add_executable(test_plugin
     test_plugin.cpp
+    socket_instrument.cpp
+    socket_instrument.h
     iplugininterface.h
 )
 

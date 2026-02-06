@@ -37,7 +37,7 @@ public:
     
     // Device discovery
     std::vector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const std::string &address) override;
+    bool connectToDevice(const std::string &address, const std::string &port) override;
     
     // Connection management
     bool connect() override;
@@ -58,7 +58,7 @@ private:
     bool m_rfEnabled;
     double m_freqHz;
     double m_powerDbm;
-    std::string m_connectedAddress;
+    std::string m_connectedIPAddress;
 
     // sc5511a specific handle
     sc5511a_device_handle_t dev_handle; //device handle

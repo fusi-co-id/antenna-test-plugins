@@ -32,7 +32,7 @@ DummySignalAnalyzer::DummySignalAnalyzer()
     , m_startFreqHz(5460.0e6)  // 5460 MHz default
     , m_stopFreqHz(5560.0e6)   // 5560 MHz default (100 MHz span)
     , m_rbwHz(1.0e6)           // 1 MHz default
-    , m_connectedAddress("")
+    , m_connectedIPAddress("")
 {
     // Initialize random generator with current time
     m_randomGenerator.seed(std::chrono::system_clock::now().time_since_epoch().count());
@@ -98,22 +98,22 @@ std::vector<DeviceInfo> DummySignalAnalyzer::scanDevices()
     return devices;
 }
 
-bool DummySignalAnalyzer::connectToDevice(const std::string &address)
+bool DummySignalAnalyzer::connectToDevice(const std::string &address, const std::string &port)
 {
     if (m_isConnected) {
-        std::cerr << "[Dummy SA Plugin] Already connected to " << m_connectedAddress << std::endl;
+        std::cerr << "[Dummy SA Plugin] Already connected to " << m_connectedIPAddress << std::endl;
         return false;
     }
     
-    std::cout << "[Dummy SA Plugin] Connecting to device at: " << address << std::endl;
+    std::cout << "[Dummy SA Plugin] Connecting to device at: " << address << " on port: " << port << std::endl;
     
     // Simulate connection delay
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     
-    m_connectedAddress = address;
+    m_connectedIPAddress = address;
     m_isConnected = true;
     
-    std::cout << "[Dummy SA Plugin] Connected successfully to " << address << std::endl;
+    std::cout << "[Dummy SA Plugin] Connected successfully to " << address << " on port: " << port << std::endl;
     if (onConnected) {
         onConnected();
     }
@@ -153,10 +153,10 @@ void DummySignalAnalyzer::disconnect()
         return;
     }
     
-    std::cout << "[Dummy SA Plugin] Disconnecting from " << m_connectedAddress << std::endl;
+    std::cout << "[Dummy SA Plugin] Disconnecting from " << m_connectedIPAddress << std::endl;
     
     m_isConnected = false;
-    m_connectedAddress.clear();
+    m_connectedIPAddress.clear();
     
     std::cout << "[Dummy SA Plugin] Disconnected" << std::endl;
     if (onDisconnected) {

@@ -28,10 +28,11 @@ struct PluginInfo {
 
 // Available plugins
 std::vector<PluginInfo> g_plugins = {
-    {"SignalCore SC5511A", "../../signalgenerator/signalcore_sc5511a/build/Release/signalcore_sc5511a.dll", "signalgenerator"},
-    {"Dummy Signal Generator", "../../signalgenerator/dummy/build/Release/dummy.dll", "signalgenerator"},
-    {"Dummy Signal Analyzer", "../../signalanalyzer/dummy/build/Release/dummy.dll", "signalanalyzer"},
-    {"Dummy Positioner", "../../positioner/dummy/build/Release/dummy.dll", "positioner"}
+    // {"SignalCore SC5511A", "../../signalgenerator/signalcore_sc5511a/build/Release/signalcore_sc5511a.dll", "signalgenerator"},
+    // {"Dummy Signal Generator", "../../signalgenerator/dummy/build/Release/dummy.dll", "signalgenerator"},
+    // {"Dummy Signal Analyzer", "../../signalanalyzer/dummy/build/Release/dummy.dll", "signalanalyzer"},
+    // {"Dummy Positioner", "../../positioner/dummy/build/Release/dummy.dll", "positioner"},
+    {"Planar Positioner", "../../positioner/planar/build/Release/planar.dll", "positioner"},
 };
 
 // Test Signal Generator Plugin
@@ -322,8 +323,8 @@ void testPositionerPlugin(const std::string& pluginPath) {
     
     if (plugin->isConnected()) {
         // Test 3: Move to position
-        std::cout << "\n[Test 3] Moving to position (45°, 30°)..." << std::endl;
-        plugin->moveTo(45.0, 30.0);
+        std::cout << "\n[Test 3] Moving to position XY (0, 10)..." << std::endl;
+        plugin->moveToXY(0, 10);
         
         // Wait for movement
         std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -333,8 +334,8 @@ void testPositionerPlugin(const std::string& pluginPath) {
         plugin->stop();
         
         // Test 5: Move to home
-        std::cout << "\n[Test 5] Moving to home position..." << std::endl;
-        plugin->moveTo(0.0, 0.0);
+        std::cout << "\n[Test 5] Moving to home position XY (20, 20)..." << std::endl;
+        plugin->moveToXY(20, 20);
         std::this_thread::sleep_for(std::chrono::seconds(2));
         
         // Test 6: Disconnect

@@ -34,7 +34,7 @@ SignalCoreSC5511A::SignalCoreSC5511A()
     , m_rfEnabled(false)
     , m_freqHz(5510.0e6)  // 5510 MHz default
     , m_powerDbm(0.0)     // 0 dBm default
-    , m_connectedAddress("")
+    , m_connectedIPAddress("")
     , dev_handle(NULL)
     , num_of_devices(0)
     , status(0)
@@ -81,10 +81,10 @@ std::vector<DeviceInfo> SignalCoreSC5511A::scanDevices()
     return devices;
 }
 
-bool SignalCoreSC5511A::connectToDevice(const std::string &address)
+bool SignalCoreSC5511A::connectToDevice(const std::string &address, const std::string &port)
 {
     if (m_isConnected) {
-        std::cerr << "[SignalCoreSC5511A Plugin] Already connected to " << m_connectedAddress << std::endl;
+        std::cerr << "[SignalCoreSC5511A Plugin] Already connected to " << m_connectedIPAddress << std::endl;
         return false;
     }
     
@@ -107,7 +107,7 @@ bool SignalCoreSC5511A::connectToDevice(const std::string &address)
         return false;
     }
     
-    m_connectedAddress = address;
+    m_connectedIPAddress = address;
     m_isConnected = true;
     
     // Disable Sweep/List Mode (set to single tone mode)
@@ -183,7 +183,7 @@ void SignalCoreSC5511A::disconnect()
         disableRf();
     }
     
-    std::cout << "[SignalCoreSC5511A Plugin] Disconnecting from " << m_connectedAddress << std::endl;
+    std::cout << "[SignalCoreSC5511A Plugin] Disconnecting from " << m_connectedIPAddress << std::endl;
     
     // Close the device using sc5511a API
     if (dev_handle != NULL) {
@@ -192,7 +192,7 @@ void SignalCoreSC5511A::disconnect()
     }
     
     m_isConnected = false;
-    m_connectedAddress.clear();
+    m_connectedIPAddress.clear();
     
     std::cout << "[SignalCoreSC5511A Plugin] Disconnected" << std::endl;
     if (onDisconnected) {

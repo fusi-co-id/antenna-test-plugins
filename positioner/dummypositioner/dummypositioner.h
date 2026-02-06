@@ -39,48 +39,59 @@ public:
     
     // Device discovery
     std::vector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const std::string &address) override;
+    bool connectToDevice(const std::string &address, const std::string &port) override;
     
     // Connection management
-    bool connect() override;
     void disconnect() override;
     bool isConnected() const override;
     
     // Configuration
-    void setAZStep(double step) override;
-    void setStep(const Step &step) override;
-    void setMinRange(const MinRange &minRange) override;
-    void setMaxRange(const MaxRange &maxRange) override;
-    void setMovement(const Movement &movement) override;
-    void setDistance(double distance) override;
-    
+    virtual void setTxStep(const Position &step) override;
+    virtual void setTxMinRange(const Position &minRange) override;
+    virtual void setTxMaxRange(const Position &maxRange) override;
+    virtual void setRxStep(const Position &step) override;
+    virtual void setRxMinRange(const Position &minRange) override;
+    virtual void setRxMaxRange(const Position &maxRange) override;
+
     // Get Position
-    double getCurrentAZ() const override;
-    double getCurrentEL() const override;
-    double getCurrentPOL() const override;
-    
+    virtual Position getCurrentTxPosition() const override;
+    virtual Position getCurrentRxPosition() const override;
+
     // Control
-    void start() override;
-    void stop() override;
-    void moveTo(double azimuth, double elevation) override;
-    void moveTo(double azimuth, double elevation, double polar) override;
+    virtual void moveTxToPosition(const Position &position) override;
+    virtual void moveRxToPosition(const Position &position) override;
     
+    // Callback functions for events (optional, can be nullptr)
+    std::function<void()> onConnected;
+    std::function<void()> onDisconnected;
+    std::function<void()> onTxMovementStarted;
+    std::function<void()> onTxMovementStopped;
+    std::function<void()> onRxMovementStarted;
+    std::function<void()> onRxMovementStopped;
+    std::function<void(const Position&)> onTxPositionChanged;
+    std::function<void(const Position&)> onRxPositionChanged;
+    std::function<void(const std::string&)> onError;
+    std::function<void(const std::vector<DeviceInfo>&)> onDevicesScanned;
+            
 private:
     void movementThread();
     
+    // Socket Connection
+    std::string m_connectedIPAddress;
+    std::string m_connectedPort;
     bool m_isConnected;
+
     std::atomic<bool> m_isMoving;
-    Step m_step;
-    MinRange m_minRange;
-    MaxRange m_maxRange;
-    Movement m_currentMovement;
-    double m_distance;
-    std::string m_connectedAddress;
+    Position m_txStep;
+    Position m_minTxRange;
+    Position m_maxTxRange;
+    Position m_rxStep;
+    Position m_minRxRange;
+    Position m_maxRxRange;
     
     // Current position
-    double m_currentAZ;
-    double m_currentEL;
-    double m_currentPOL;
+    Position m_currentTxPosition;
+    Position m_currentRxPosition;
     
     std::thread m_movementThread;
     int m_stepCount;

@@ -37,7 +37,7 @@ public:
     
     // Device discovery
     std::vector<DeviceInfo> scanDevices() override;
-    bool connectToDevice(const std::string &address) override;
+    bool connectToDevice(const std::string &address, const std::string &port) override;
     
     // Connection management
     bool connect() override;
@@ -57,7 +57,7 @@ private:
     double m_startFreqHz;
     double m_stopFreqHz;
     double m_rbwHz;
-    std::string m_connectedAddress;
+    std::string m_connectedIPAddress;
     std::mt19937 m_randomGenerator;
 };
 
