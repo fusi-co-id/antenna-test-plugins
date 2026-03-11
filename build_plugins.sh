@@ -118,7 +118,11 @@ for plugin in "${PLUGINS_TO_BUILD[@]}"; do
     ZIP_SOURCE="$plugin_dir/build/$plugin_name-plugin.zip"
     ZIP_SOURCE_ALT="$plugin_dir/build/dummy-plugin.zip"
     DATETIME=$(date +%Y%m%d_%H%M%S)
-    ZIP_DEST="$SCRIPT_DIR/dist/$category-$plugin_name-plugin-$DATETIME.zip"
+    BUILD_TAG=""
+    if [ "$BUILD_TYPE" == "Debug" ]; then
+        BUILD_TAG="_Debug_"
+    fi
+    ZIP_DEST="$SCRIPT_DIR/dist/$category-$plugin_name-plugin${BUILD_TAG}$DATETIME.zip"
 
     # If Debug build, look in Debug subdir for zip if it exists
     if [ "$BUILD_TYPE" == "Debug" ]; then
