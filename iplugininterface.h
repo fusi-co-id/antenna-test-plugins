@@ -149,6 +149,7 @@ public:
     // Control
     virtual void moveTxToPosition(const Position &position) = 0;
     virtual void moveRxToPosition(const Position &position) = 0;
+    virtual void stopMovement() = 0;
     
     // Callback functions for events (optional, can be nullptr)
     std::function<void()> onConnected;

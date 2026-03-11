@@ -321,6 +321,11 @@ void DummyPositioner::moveRxToPosition(const Position &position)
     std::cout << "[Planar Positioner Plugin] moveRxToPosition called with position: AZ=" << position.AZ << " EL=" << position.EL << " POL=" << position.POL << " X=" << position.X << " Y=" << position.Y << " Z=" << position.Z << std::endl;  
 }
 
+void DummyPositioner::stopMovement()
+{
+    std::cout << "[Planar Positioner Plugin] Stopping movement..." << std::endl;
+}
+
 // Factory function to create plugin instance
 extern "C" {
     #ifdef _WIN32
