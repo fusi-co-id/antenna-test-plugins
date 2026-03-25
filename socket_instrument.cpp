@@ -6,7 +6,7 @@
 #endif
 
 SocketInstrument::SocketInstrument(const std::string& ip, int port, int timeout_sec, const std::map<std::string, std::string>& cmd_map)
-    : connected(false), terminator("\r\n"), commands(cmd_map) {
+    : sockfd(-1), connected(false), terminator("\r\n"), commands(cmd_map) {
 #ifdef _WIN32
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
@@ -29,7 +29,10 @@ void SocketInstrument::connectSocket(const std::string& ip, int port, int timeou
 #else
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 #endif
-    if (sockfd < 0) throw std::runtime_error("Socket creation failed");
+    if (sockfd < 0) {
+        connected = false;
+        return;
+    }
 
     struct sockaddr_in serv_addr;
     memset(&serv_addr, 0, sizeof(serv_addr));
@@ -38,15 +41,28 @@ void SocketInstrument::connectSocket(const std::string& ip, int port, int timeou
 #ifdef _WIN32
     // Use PCSTR (const char*) for IPv4 string
     if (InetPton(AF_INET, (PCSTR)ip.c_str(), &serv_addr.sin_addr) != 1) {
-        throw std::runtime_error("Invalid IP address format");
+        connected = false;
+        closesocket(sockfd);
+        sockfd = -1;
+        return;
     }
 #else
     if (inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr) != 1) {
-        throw std::runtime_error("Invalid IP address format");
+        connected = false;
+        close(sockfd);
+        sockfd = -1;
+        return;
     }
 #endif
     if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
-        throw std::runtime_error("Connection failed");
+        connected = false;
+#ifdef _WIN32
+        closesocket(sockfd);
+#else
+        close(sockfd);
+#endif
+        sockfd = -1;
+        return;
     }
     connected = true;
 }

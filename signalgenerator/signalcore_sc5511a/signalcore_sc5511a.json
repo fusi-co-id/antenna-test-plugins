@@ -8,5 +8,6 @@
     "version": "1.0.0",
     "description": "A SignalCore SC5511A signal generator plugin.",
     "url": "https://www.fusi.co.id",
-    "license": "MIT"
+    "license": "MIT",
+    "debug": true
 }

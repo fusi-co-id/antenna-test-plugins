@@ -8,5 +8,6 @@
     "version": "1.0.0",
     "description": "A planar positioner plugin for testing purposes.",
     "url": "https://www.fusi.co.id",
-    "license": "MIT"
+    "license": "MIT",
+    "debug": true
 }

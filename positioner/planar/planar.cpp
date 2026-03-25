@@ -31,6 +31,101 @@
 #include <thread>
 #include <chrono>
 #include <cmath>
+#include <fstream>
+#include <filesystem>
+#include <vector>
+#include <regex>
+#include <memory>
+#include <mutex>
+
+namespace {
+
+class TeeStreamBuf : public std::streambuf {
+public:
+    TeeStreamBuf(std::streambuf* first, std::streambuf* second)
+        : m_first(first), m_second(second)
+    {
+    }
+
+protected:
+    int overflow(int ch) override
+    {
+        if (ch == EOF) {
+            return !EOF;
+        }
+
+        const int firstResult = m_first ? m_first->sputc(static_cast<char>(ch)) : ch;
+        const int secondResult = m_second ? m_second->sputc(static_cast<char>(ch)) : ch;
+        return (firstResult == EOF || secondResult == EOF) ? EOF : ch;
+    }
+
+    int sync() override
+    {
+        const int firstSync = m_first ? m_first->pubsync() : 0;
+        const int secondSync = m_second ? m_second->pubsync() : 0;
+        return (firstSync == 0 && secondSync == 0) ? 0 : -1;
+    }
+
+private:
+    std::streambuf* m_first;
+    std::streambuf* m_second;
+};
+
+std::once_flag g_debugLogInitFlag;
+std::unique_ptr<std::ofstream> g_logFile;
+std::unique_ptr<TeeStreamBuf> g_teeBuf;
+
+bool readDebugFlagFromJson(const std::filesystem::path& jsonPath)
+{
+    std::ifstream input(jsonPath);
+    if (!input.is_open()) {
+        return false;
+    }
+
+    std::string jsonText((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+    const std::regex debugRegex(R"("debug"\s*:\s*true)", std::regex_constants::icase);
+    return std::regex_search(jsonText, debugRegex);
+}
+
+std::filesystem::path findPlanarConfigPath()
+{
+    const std::filesystem::path cwd = std::filesystem::current_path();
+    const std::vector<std::filesystem::path> candidates = {
+        cwd / "planar.json",
+        cwd / "positioner" / "planar" / "planar.json",
+        cwd / "instruments" / "positioner" / "planar" / "planar.json"
+    };
+
+    for (const auto& path : candidates) {
+        if (std::filesystem::exists(path)) {
+            return path;
+        }
+    }
+
+    return {};
+}
+
+void initializeDebugLogMirror()
+{
+    std::call_once(g_debugLogInitFlag, []() {
+        const std::filesystem::path configPath = findPlanarConfigPath();
+        if (configPath.empty() || !readDebugFlagFromJson(configPath)) {
+            return;
+        }
+
+        const std::filesystem::path logPath = configPath.parent_path() / "log_plugin.txt";
+        g_logFile = std::make_unique<std::ofstream>(logPath, std::ios::app);
+        if (!g_logFile->is_open()) {
+            return;
+        }
+
+        g_teeBuf = std::make_unique<TeeStreamBuf>(std::cout.rdbuf(), g_logFile->rdbuf());
+        std::cout.rdbuf(g_teeBuf.get());
+        std::cout << "[Planar Positioner Plugin] Debug log mirror enabled at " << logPath.string() << std::endl;
+    });
+}
+
+} // namespace
 
 PlanarPositioner::PlanarPositioner()
     : m_isConnected(false)
@@ -38,6 +133,8 @@ PlanarPositioner::PlanarPositioner()
     , m_connectedIPAddress("")
     , m_stepCount(0)
 {
+    initializeDebugLogMirror();
+
     // Initialize step with default values
     m_txStep.AZ = 1.0;
     m_txStep.EL = 1.0;
@@ -302,6 +399,22 @@ Position PlanarPositioner::getCurrentTxPosition() const
 Position PlanarPositioner::getCurrentRxPosition() const
 {
     return m_currentRxPosition;
+}
+
+void PlanarPositioner::stopMovement()
+{
+    if (m_isMoving) {
+        std::cout << "[Planar Positioner Plugin] Stopping movement..." << std::endl;
+        m_isMoving = false;
+        // Send stop command to all motors
+        m_socketInstrument->write_raw("motor_1 off");
+        m_socketInstrument->write_raw("motor_2 off");
+        m_socketInstrument->write_raw("motor_3 off");
+        m_socketInstrument->write_raw("motor_4 off");
+        m_socketInstrument->write_raw("motor_5 off");
+    } else {
+        std::cout << "[Planar Positioner Plugin] No movement to stop" << std::endl;
+    }
 }
 
 void PlanarPositioner::moveTxToPosition(const Position &position)

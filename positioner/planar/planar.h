@@ -61,6 +61,7 @@ public:
     // Control
     virtual void moveTxToPosition(const Position &position) override;
     virtual void moveRxToPosition(const Position &position) override;
+    virtual void stopMovement() override;
     
     // Callback functions for events (optional, can be nullptr)
     std::function<void()> onConnected;
