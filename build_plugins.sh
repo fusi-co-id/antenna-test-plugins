@@ -42,11 +42,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Hardcoded list of plugins to build
 # Format: category/plugin_name
 PLUGINS_TO_BUILD=( \
-    # "signalanalyzer/dummy" \
+    "signalanalyzer/dummy" \
     # "signalgenerator/dummy" \
     # "signalgenerator/signalcore_sc5511a" \
     # "positioner/dummypositioner" \
-    "positioner/planar" \
+    # "positioner/planar" \
 )
 
 echo "Plugins to build:"
@@ -175,3 +175,7 @@ echo "1. Use the ZIP files in the dist folder for installation"
 echo "2. Launch the Antenna Tester GUI application"
 echo "3. Go to Instruments menu to verify plugins are detected"
 echo ""
+
+cd ..
+cd ..
+cd ..

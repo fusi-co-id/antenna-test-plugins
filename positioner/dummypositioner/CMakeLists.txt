@@ -7,11 +7,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Plugin source files
 set(PLUGIN_SOURCES
     dummypositioner.cpp
+    ../../socket_instrument.cpp
 )
 
 set(PLUGIN_HEADERS
     dummypositioner.h
     ../../iplugininterface.h
+    ../../socket_instrument.h
 )
 
 # Create shared library (DLL)
@@ -25,6 +27,10 @@ target_include_directories(dummypositioner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../../
 )
+
+if(WIN32)
+    target_link_libraries(dummypositioner ws2_32)
+endif()
 
 # Set output name to match folder name
 set_target_properties(dummypositioner PROPERTIES
