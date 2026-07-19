@@ -27,6 +27,7 @@ public:
     void write(const std::string& command, const std::string& value = "");
     void write_raw(const std::string& raw_command);
     std::string query(const std::string& command);
+    std::string read_until(char delimiter, int timeout_ms);
     void disconnect();
     bool isConnected() const;
 private:

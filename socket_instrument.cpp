@@ -94,6 +94,50 @@ std::string SocketInstrument::query(const std::string& command) {
     return "";
 }
 
+std::string SocketInstrument::read_until(char delimiter, int timeout_ms) {
+    if (!connected) {
+        return "";
+    }
+
+    std::string result;
+    char buffer[1];
+    fd_set read_fds;
+    timeval tv;
+
+    // Set timeout
+    tv.tv_sec = timeout_ms / 1000;
+    tv.tv_usec = (timeout_ms % 1000) * 1000;
+
+    while (true) {
+        FD_ZERO(&read_fds);
+        FD_SET(sockfd, &read_fds);
+
+        // Wait for data to be available on the socket
+        int activity = select(sockfd + 1, &read_fds, NULL, NULL, &tv);
+
+        if (activity < 0) {
+            // select error
+            return "";
+        }
+
+        if (activity == 0) {
+            // Timeout occurred
+            throw std::runtime_error("Read timeout");
+        }
+
+        int n = recv(sockfd, buffer, 1, 0);
+        if (n > 0) {
+            result += buffer[0];
+            if (buffer[0] == delimiter) {
+                return result; // Delimiter found
+            }
+        } else {
+            // Socket closed or error
+            return result;
+        }
+    }
+}
+
 void SocketInstrument::disconnect() {
     if (connected) {
 #ifdef _WIN32

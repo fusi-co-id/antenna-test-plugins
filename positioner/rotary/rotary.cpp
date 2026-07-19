@@ -1,4 +1,4 @@
-#include "dummypositioner.h"
+#include "rotary.h"
 #include <chrono>
 #include <thread>
 #include <cmath>
@@ -6,7 +6,7 @@
 #include <sstream>
 #include <cstdint>
 
-DummyPositioner::DummyPositioner()
+Rotary::Rotary()
     : m_isConnected(false)
     , m_connectedAddress("")
     , m_socket(nullptr)
@@ -17,12 +17,13 @@ DummyPositioner::DummyPositioner()
 
     m_currentRxPos.AZ = 0; m_currentRxPos.EL = 0; m_currentRxPos.POL = 0;
     m_currentRxPos.X = 0; m_currentRxPos.Y = 0; m_currentRxPos.Z = 0;
-    std::cout << "[Dummy Positioner Plugin] Instance created\n";
+    m_currentRxPos.RV = 0; m_currentRxPos.RH = 0; m_currentRxPos.LIN = 0;
+    std::cout << "[Rotary Plugin] Instance created\n";
 }
 
-std::vector<DeviceInfo> DummyPositioner::scanDevices()
+std::vector<DeviceInfo> Rotary::scanDevices()
 {
-    std::cout << "[Dummy Positioner Plugin] Scanning for devices...\n";
+    std::cout << "[Rotary Plugin] Scanning for devices...\n";
     
     std::vector<DeviceInfo> devices;
     
@@ -31,15 +32,15 @@ std::vector<DeviceInfo> DummyPositioner::scanDevices()
     
     // Simulate 1 LAN device
     DeviceInfo device1;
-    device1.name = "Dummy Positioner";
-    device1.serialNumber = "DPS-1000";
+    device1.name = "Rotary Positioner";
+    device1.serialNumber = "RTR-1000";
     device1.address = "192.168.20.26";
     device1.port = "5000";
     device1.type = "LAN";
     device1.isAvailable = true;
     devices.push_back(device1);
     
-    std::cout << "[Dummy Positioner Plugin] Found " << devices.size() << " devices\n";
+    std::cout << "[Rotary Plugin] Found " << devices.size() << " devices\n";
     
     if (onDevicesScanned) {
         onDevicesScanned(devices);
@@ -47,54 +48,54 @@ std::vector<DeviceInfo> DummyPositioner::scanDevices()
     return devices;
 }
 
-bool DummyPositioner::connectToDevice(const std::string &address, const std::string &port)
+bool Rotary::connectToDevice(const std::string &address, const std::string &port)
 {
     if (m_isConnected) {
-        std::cerr << "[Dummy Positioner Plugin] Already connected to " << m_connectedAddress << "\n";
+        std::cerr << "[Rotary Plugin] Already connected to " << m_connectedAddress << "\n";
         return false;
     }
     
     uint16_t p = port.empty() ? 5000 : static_cast<uint16_t>(std::stoi(port));
-    std::cout << "[Dummy Positioner Plugin] Connecting to device at: " << address << " on port " << p << "\n";
+    std::cout << "[Rotary Plugin] Connecting to device at: " << address << " on port " << p << "\n";
     
     try {
         m_socket = new SocketInstrument(address, p, 3, {});
         if (m_socket->isConnected()) {
             m_connectedAddress = address;
             m_isConnected = true;
-            std::cout << "[Dummy Positioner Plugin] Connected successfully to " << address << "\n";
+            std::cout << "[Rotary Plugin] Connected successfully to " << address << "\n";
             if (onConnected) {
                 onConnected();
             }
             return true;
         } else {
-            std::cerr << "[Dummy Positioner Plugin] Connection failed\n";
+            std::cerr << "[Rotary Plugin] Connection failed\n";
             delete m_socket;
             m_socket = nullptr;
             return false;
         }
     } catch (const std::exception& e) {
-        std::cerr << "[Dummy Positioner Plugin] Exception during connection: " << e.what() << "\n";
+        std::cerr << "[Rotary Plugin] Exception during connection: " << e.what() << "\n";
         return false;
     }
 }
 
-DummyPositioner::~DummyPositioner()
+Rotary::~Rotary()
 {
     if (m_isConnected) {
         disconnect();
     }
-    std::cout << "[Dummy Positioner Plugin] Instance destroyed\n";
+    std::cout << "[Rotary Plugin] Instance destroyed\n";
 }
 
-void DummyPositioner::disconnect()
+void Rotary::disconnect()
 {
     if (!m_isConnected) {
-        std::cerr << "[Dummy Positioner Plugin] Not connected\n";
+        std::cerr << "[Rotary Plugin] Not connected\n";
         return;
     }
     
-    std::cout << "[Dummy Positioner Plugin] Disconnecting from " << m_connectedAddress << "\n";
+    std::cout << "[Rotary Plugin] Disconnecting from " << m_connectedAddress << "\n";
     
     if (m_socket) {
         m_socket->disconnect();
@@ -105,31 +106,31 @@ void DummyPositioner::disconnect()
     m_isConnected = false;
     m_connectedAddress.clear();
     
-    std::cout << "[Dummy Positioner Plugin] Disconnected\n";
+    std::cout << "[Rotary Plugin] Disconnected\n";
     if (onDisconnected) {
         onDisconnected();
     }
 }
 
-bool DummyPositioner::isConnected() const
+bool Rotary::isConnected() const
 {
     return m_isConnected;
 }
 
-void DummyPositioner::setTxStep(const Position& step) {}
-void DummyPositioner::setTxMinRange(const Position& minRange) {}
-void DummyPositioner::setTxMaxRange(const Position& maxRange) {}
-void DummyPositioner::setRxStep(const Position& step) {}
-void DummyPositioner::setRxMinRange(const Position& minRange) {}
-void DummyPositioner::setRxMaxRange(const Position& maxRange) {}
+void Rotary::setTxStep(const Position& step) {}
+void Rotary::setTxMinRange(const Position& minRange) {}
+void Rotary::setTxMaxRange(const Position& maxRange) {}
+void Rotary::setRxStep(const Position& step) {}
+void Rotary::setRxMinRange(const Position& minRange) {}
+void Rotary::setRxMaxRange(const Position& maxRange) {}
 
-Position DummyPositioner::getCurrentTxPosition() const
+Position Rotary::getCurrentTxPosition() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_currentTxPos;
 }
 
-Position DummyPositioner::getCurrentRxPosition() const
+Position Rotary::getCurrentRxPosition() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_currentRxPos;
@@ -144,11 +145,14 @@ static std::string buildCommandString(const Position& position)
         << ";EL=" << position.EL 
         << ";POL=" << position.POL 
         << ";X=" << position.X 
-        << ";Y=" << position.Y << ";\n";
+        << ";Y=" << position.Y
+        << ";RV=" << position.RV
+        << ";RH=" << position.RH
+        << ";LIN=" << position.LIN << ";\n";
     return oss.str();
 }
 
-void DummyPositioner::moveTxToPosition(const Position &position)
+void Rotary::moveTxToPosition(const Position &position)
 {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -162,7 +166,7 @@ void DummyPositioner::moveTxToPosition(const Position &position)
         std::string logCmd = command;
         if (!logCmd.empty() && logCmd.back() == '\n') logCmd.pop_back();
         
-        std::cout << "[Dummy Positioner Plugin] Sending Tx command: " << logCmd << "\n";
+        std::cout << "[Rotary Plugin] Sending Tx command: " << logCmd << "\n";
         
         if (m_socket) {
             m_socket->write_raw(command);
@@ -174,7 +178,7 @@ void DummyPositioner::moveTxToPosition(const Position &position)
                 // Sekarang fungsi ini sudah ada di SocketInstrument
                 std::string response = m_socket->read_until('\n', 30000); // Timeout 30 detik
             } catch (const std::exception& e) {
-                std::cerr << "[Dummy Positioner Plugin] Timeout waiting for movement completion response: " << e.what() << "\n";
+                std::cerr << "[Rotary Plugin] Timeout waiting for movement completion response: " << e.what() << "\n";
             }
         }
     }
@@ -184,7 +188,7 @@ void DummyPositioner::moveTxToPosition(const Position &position)
     }
 }
 
-void DummyPositioner::moveRxToPosition(const Position &position)
+void Rotary::moveRxToPosition(const Position &position)
 {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -197,7 +201,7 @@ void DummyPositioner::moveRxToPosition(const Position &position)
         std::string logCmd = command;
         if (!logCmd.empty() && logCmd.back() == '\n') logCmd.pop_back();
         
-        std::cout << "[Dummy Positioner Plugin] Sending Rx command: " << logCmd << "\n";
+        std::cout << "[Rotary Plugin] Sending Rx command: " << logCmd << "\n";
         
         if (m_socket) {
             m_socket->write_raw(command);
@@ -209,7 +213,7 @@ void DummyPositioner::moveRxToPosition(const Position &position)
                 // Sekarang fungsi ini sudah ada di SocketInstrument
                 std::string response = m_socket->read_until('\n', 30000); // Timeout 30 detik
             } catch (const std::exception& e) {
-                std::cerr << "[Dummy Positioner Plugin] Timeout waiting for movement completion response: " << e.what() << "\n";
+                std::cerr << "[Rotary Plugin] Timeout waiting for movement completion response: " << e.what() << "\n";
             }
         }
     }
@@ -219,11 +223,11 @@ void DummyPositioner::moveRxToPosition(const Position &position)
     }
 }
 
-void DummyPositioner::stopMovement()
+void Rotary::stopMovement()
 {
-    std::cout << "[Dummy Positioner Plugin] stopMovement\n";
+    std::cout << "[Rotary Plugin] stopMovement\n";
     if (isConnected()) {
-        std::cout << "[Dummy Positioner Plugin] Sending command: STOP;\n";
+        std::cout << "[Rotary Plugin] Sending command: STOP;\n";
         
         if (m_socket) {
             m_socket->write_raw("STOP;\n");
@@ -240,8 +244,8 @@ extern "C" {
     #endif
     IPositionerPlugin* createPositionerPlugin()
     {
-        std::cout << "[Dummy Positioner Plugin] Factory: Creating plugin instance\n";
-        return new DummyPositioner();
+        std::cout << "[Rotary Plugin] Factory: Creating plugin instance\n";
+        return new Rotary();
     }
     
     #ifdef _WIN32
@@ -249,7 +253,7 @@ extern "C" {
     #endif
     void destroyPlugin(void* plugin)
     {
-        std::cout << "[Dummy Positioner Plugin] Factory: Destroying plugin instance\n";
+        std::cout << "[Rotary Plugin] Factory: Destroying plugin instance\n";
         delete static_cast<IPositionerPlugin*>(plugin);
     }
 }

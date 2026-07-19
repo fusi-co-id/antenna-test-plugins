@@ -42,10 +42,12 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Hardcoded list of plugins to build
 # Format: category/plugin_name
 PLUGINS_TO_BUILD=( \
-    "signalanalyzer/dummy" \
-    # "signalgenerator/dummy" \
-    # "signalgenerator/signalcore_sc5511a" \
-    # "positioner/dummypositioner" \
+     "signalanalyzer/dummy" \
+    #"signalanalyzer/anritsu" \
+     "signalgenerator/dummy" \
+    #"signalgenerator/signalcore_sc5511a" \
+    #"positioner/dummypositioner" \
+     "positioner/rotary" \
     # "positioner/planar" \
 )
 

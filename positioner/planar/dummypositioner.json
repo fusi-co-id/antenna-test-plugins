@@ -1,0 +1,13 @@
+{
+    "name": "Dummy Positioner",
+    "vendor": "FUSI Development",
+    "series": "DPS-1000",
+    "type": "LAN",
+    "author": "Yan Syafri Hidayat",
+    "email": "yansyaf@gmail.com",
+    "version": "1.0.0",
+    "description": "A dummy positioner plugin for testing purposes.",
+    "url": "https://www.fusi.co.id",
+    "license": "MIT",
+    "debug": true
+}

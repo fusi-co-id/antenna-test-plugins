@@ -54,6 +54,9 @@ struct Position {
     double X;
     double Y;
     double Z;
+    double RV; // Rotation around vertical axis (if applicable)
+    double RH; // Rotation around horizontal axis (if applicable)
+    double LIN; // Linear movement (if applicable)
 };
 
 // Plugin interface for Signal Analyzer
